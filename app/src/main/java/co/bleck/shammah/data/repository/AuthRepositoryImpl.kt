@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl private constructor() : AuthRepository {
     private val auth = FirebaseAuth.getInstance()
     private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
     override val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
@@ -18,6 +18,16 @@ class AuthRepositoryImpl : AuthRepository {
         auth.addAuthStateListener { firebaseAuth ->
             _currentUser.value = firebaseAuth.currentUser
         }
+    }
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AuthRepositoryImpl? = null
+
+        fun getInstance(): AuthRepositoryImpl =
+            INSTANCE ?: synchronized(this) {
+                INSTANCE ?: AuthRepositoryImpl().also { INSTANCE = it }
+            }
     }
 
     override suspend fun signInAnonymously(): Result<FirebaseUser> = suspendCancellableCoroutine { continuation ->

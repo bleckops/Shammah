@@ -2,12 +2,24 @@ package co.bleck.shammah.domain.model
 
 import java.util.Date
 
-data class Sermon(
+enum class EventType {
+    birthdays,
+    retreat,
+    camp,
+    prayer,
+    social,
+    evangelism
+}
+
+data class Event(
     val id: String = "",
     val title: String = "",
     val description: String = "",
     val date: Date = Date(),
-    val notes: String = "",
+    val time: String = "",
+    val location: String = "",
+    val imageUrl: String = "",
+    val type: EventType = EventType.social,
     val isActive: Boolean = true,
     val createdAt: Date = Date(),
     val updatedAt: Date = Date()

@@ -14,6 +14,8 @@ google-services = "4.4.3"
 firebase-bom = "34.1.0"
 firebaseFirestoreKtx = "25.1.1"
 coil = "2.6.0"
+compose-google-fonts = "1.7.8"
+kizitonwose-calendar = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +39,8 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestoreKtx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+compose-ui-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "compose-google-fonts" }
+kizitonwose-calendar-compose = { group = "com.kizitonwose.calendar", name = "compose", version.ref = "kizitonwose-calendar" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

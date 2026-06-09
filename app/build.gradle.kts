@@ -37,6 +37,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -57,6 +58,8 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth)
     implementation(libs.coil.compose)
+    implementation(libs.compose.ui.google.fonts)
+    implementation(libs.kizitonwose.calendar.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

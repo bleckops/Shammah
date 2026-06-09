@@ -7,25 +7,40 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import co.bleck.shammah.R
 import co.bleck.shammah.ui.MainActivity
 import co.bleck.shammah.ui.theme.ShammahTheme
@@ -50,8 +65,30 @@ class SplashActivity : ComponentActivity() {
 
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
-    val scale = remember { Animatable(0.3f) }
-    val alpha = remember { Animatable(0f) }
+    val scale     = remember { Animatable(0.25f) }
+    val alpha     = remember { Animatable(0f) }
+    val taglineAlpha = remember { Animatable(0f) }
+
+    // Pulsing glow ring
+    val glowTransition = rememberInfiniteTransition(label = "glow")
+    val glowScale by glowTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue  = 1.14f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow_scale"
+    )
+    val glowAlpha by glowTransition.animateFloat(
+        initialValue = 0.18f,
+        targetValue  = 0.38f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow_alpha"
+    )
 
     LaunchedEffect(key1 = true) {
         launch {
@@ -59,17 +96,24 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 targetValue = 1.0f,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    stiffness    = Spring.StiffnessLow
                 )
             )
         }
         launch {
             alpha.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 1000)
+                targetValue   = 1f,
+                animationSpec = tween(durationMillis = 900)
             )
         }
-        delay(1800)
+        delay(700)
+        launch {
+            taglineAlpha.animateTo(
+                targetValue   = 1f,
+                animationSpec = tween(durationMillis = 600)
+            )
+        }
+        delay(1400)
         onSplashFinished()
     }
 
@@ -77,23 +121,53 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(
+                Brush.linearGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.88f),
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.30f)
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-            contentDescription = "App Logo",
-            modifier = Modifier
-                .size(200.dp)
-                .scale(scale.value)
-                .alpha(alpha.value)
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Pulsing glow ring behind the logo
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(200.dp)
+                        .scale(glowScale)
+                        .clip(CircleShape)
+                        .background(
+                            MaterialTheme.colorScheme.secondary.copy(alpha = glowAlpha)
+                        )
+                )
+                Image(
+                    painter            = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = "App Logo",
+                    modifier           = Modifier
+                        .size(200.dp)
+                        .scale(scale.value)
+                        .alpha(alpha.value)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Tagline fades in after logo settles
+            Text(
+                text       = "Formados por Cristo",
+                style      = MaterialTheme.typography.titleMedium.copy(
+                    fontStyle = FontStyle.Italic,
+                    letterSpacing = 1.sp
+                ),
+                color      = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                fontWeight = FontWeight.Medium,
+                modifier   = Modifier.alpha(taglineAlpha.value)
+            )
+        }
     }
 }

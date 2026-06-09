@@ -1,11 +1,9 @@
 package co.bleck.shammah.ui.home.sermons.detail
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,18 +11,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import co.bleck.shammah.ui.components.ShimmerBox
 import co.bleck.shammah.ui.home.sermons.SermonsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,50 +40,68 @@ fun SermonDetailScreen(
     val sermons by vm.sermons.collectAsState()
     val sermon = sermons.find { it.id == sermonId }
 
-    if (sermon == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-        }
-    } else {
-        var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
-        }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Detalle del Sermón",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController?.navigateUp() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Regresar"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.primary
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar   = {
+            LargeTopAppBar(
+                title = {
+                    Text(
+                        text  = sermon?.title ?: "Sermón",
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 2
                     )
-                )
-            }
-        ) { innerPadding ->
-            AnimatedVisibility(
-                visible = visible,
-                enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
-                    animationSpec = tween(600, easing = LinearOutSlowInEasing),
-                    initialOffsetY = { 80 }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController?.navigateUp() }) {
+                        Icon(
+                            imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Regresar"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor         = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor      = MaterialTheme.colorScheme.primary
                 ),
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { innerPadding ->
+
+        if (sermon == null) {
+            // Shimmer loading state
+            Column(
                 modifier = Modifier
-                    .padding(innerPadding)
                     .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ShimmerBox(height = 36.dp, cornerRadius = 8.dp)
+                ShimmerBox(height = 28.dp, cornerRadius = 8.dp, modifier = Modifier.fillMaxWidth(0.7f))
+                ShimmerBox(height = 240.dp, cornerRadius = 20.dp)
+            }
+        } else {
+            var visible by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) { visible = true }
+
+            // Estimate reading time (avg 200 words/min)
+            val wordCount = remember(sermon) {
+                (sermon.notes.ifEmpty { sermon.description }).split("\\s+".toRegex()).size
+            }
+            val readingMinutes = maxOf(1, wordCount / 200)
+
+            val dateStr = remember(sermon.date) {
+                java.text.SimpleDateFormat("dd 'de' MMMM 'de' yyyy", java.util.Locale.forLanguageTag("es")).format(sermon.date)
+            }
+
+            AnimatedVisibility(
+                visible  = visible,
+                enter    = fadeIn(tween(500)) + slideInVertically(tween(500)) { 70 },
+                modifier = Modifier.padding(innerPadding).fillMaxSize()
             ) {
                 Column(
                     modifier = Modifier
@@ -89,82 +110,142 @@ fun SermonDetailScreen(
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    // Date display styled with a nice background chip badge
+                    // ── Header info row ────────────────────────────────────────
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment     = Alignment.CenterVertically
+                    ) {
+                        // Date chip
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        ) {
+                            Row(
+                                modifier          = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector        = Icons.Default.CalendarToday,
+                                    contentDescription = null,
+                                    tint               = MaterialTheme.colorScheme.primary,
+                                    modifier           = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text       = dateStr,
+                                    style      = MaterialTheme.typography.labelMedium,
+                                    color      = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        // Reading time chip
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                        ) {
+                            Row(
+                                modifier          = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector        = Icons.Default.Schedule,
+                                    contentDescription = null,
+                                    tint               = MaterialTheme.colorScheme.secondary,
+                                    modifier           = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text       = "~$readingMinutes min de lectura",
+                                    style      = MaterialTheme.typography.labelMedium,
+                                    color      = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
+                    // ── Decorative gradient header bar ─────────────────────────
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.secondary,
+                                        MaterialTheme.colorScheme.primary
+                                    )
+                                )
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(sermon.date),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.2.sp
-                            )
-                        }
+                    )
+
+                    // ── Description summary ────────────────────────────────────
+                    if (sermon.description.isNotEmpty() && sermon.notes.isNotEmpty()) {
+                        Text(
+                            text  = sermon.description,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontStyle = FontStyle.Italic
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
                     }
 
-                    // Title
-                    Text(
-                        text = sermon.title,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            lineHeight = 38.sp,
-                            letterSpacing = (-0.5).sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                    )
-
-                    // Notes/Content styled as a elegant sermon book block with a gold outline
+                    // ── Content card with quote decoration ─────────────────────
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f)),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        modifier  = Modifier.fillMaxWidth(),
+                        shape     = MaterialTheme.shapes.large,
+                        colors    = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FormatQuote,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .align(Alignment.TopStart)
-                            )
-                            
-                            Text(
-                                text = if (sermon.notes.isNotEmpty()) sermon.notes else sermon.description,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    lineHeight = 26.sp,
-                                    letterSpacing = 0.3.sp
-                                ),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 24.dp, start = 8.dp, end = 8.dp)
-                            )
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector        = Icons.Default.AutoStories,
+                                    contentDescription = null,
+                                    tint               = MaterialTheme.colorScheme.secondary,
+                                    modifier           = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text       = "Notas del Sermón",
+                                    style      = MaterialTheme.typography.labelLarge,
+                                    color      = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Quote mark watermark
+                            Box {
+                                Icon(
+                                    imageVector        = Icons.Default.FormatQuote,
+                                    contentDescription = null,
+                                    tint               = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
+                                    modifier           = Modifier.size(80.dp).align(Alignment.TopStart)
+                                )
+                                Text(
+                                    text     = if (sermon.notes.isNotEmpty()) sermon.notes else sermon.description,
+                                    style    = MaterialTheme.typography.bodyLarge.copy(lineHeight = 28.sp),
+                                    color    = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(top = 28.dp, start = 4.dp)
+                                )
+                            }
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }

@@ -18,7 +18,7 @@ sealed interface AuthUiState {
 }
 
 class AuthViewModel(
-    private val repository: AuthRepository = AuthRepositoryImpl()
+    private val repository: AuthRepository = AuthRepositoryImpl.getInstance()
 ) : ViewModel() {
 
     val currentUser: StateFlow<FirebaseUser?> = repository.currentUser

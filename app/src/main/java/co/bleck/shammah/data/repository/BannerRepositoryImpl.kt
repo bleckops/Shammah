@@ -20,6 +20,7 @@ class BannerRepositoryImpl : BannerRepository {
 
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { it.toObject(Banner::class.java) }
+                        .filter { it.isActive }
                     trySend(list)
                 }
             }

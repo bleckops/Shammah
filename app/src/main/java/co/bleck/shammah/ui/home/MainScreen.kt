@@ -1,27 +1,31 @@
 package co.bleck.shammah.ui.home
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import co.bleck.shammah.ui.components.BottomNavItem
+import co.bleck.shammah.ui.home.events.EventsScreen
 import co.bleck.shammah.ui.home.sermons.SermonsScreen
 import co.bleck.shammah.ui.home.sermons.detail.SermonDetailScreen
 
@@ -31,28 +35,36 @@ fun MainScreen() {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Sermons,
+        BottomNavItem.Events,
         BottomNavItem.About
     )
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = androidx.compose.ui.unit.Dp(3f)
+            ) {
                 val currentRoute = currentRoute(navController)
                 items.forEach { item ->
+                    val selected = currentRoute == item.route
                     NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title) },
-                        selected = currentRoute == item.route,
+                        icon    = { Icon(item.icon, contentDescription = item.title) },
+                        label   = { Text(item.title, style = MaterialTheme.typography.labelSmall) },
+                        selected = selected,
                         onClick = {
                             navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId)
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
+                                restoreState    = true
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary,
+                            selectedIconColor   = MaterialTheme.colorScheme.onSecondaryContainer,
+                            selectedTextColor   = MaterialTheme.colorScheme.secondary,
+                            indicatorColor      = MaterialTheme.colorScheme.secondaryContainer,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -62,39 +74,36 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController,
+            navController    = navController,
             startDestination = BottomNavItem.Home.route,
-            modifier = Modifier.padding(innerPadding),
-            enterTransition = {
-                fadeIn(animationSpec = tween(300)) + slideInHorizontally(
-                    animationSpec = tween(300),
-                    initialOffsetX = { x -> x / 4 }
-                )
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
-                    animationSpec = tween(300),
-                    targetOffsetX = { x -> -x / 4 }
-                )
-            },
-            popEnterTransition = {
-                fadeIn(animationSpec = tween(300)) + slideInHorizontally(
-                    animationSpec = tween(300),
-                    initialOffsetX = { x -> -x / 4 }
-                )
-            },
-            popExitTransition = {
-                fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
-                    animationSpec = tween(300),
-                    targetOffsetX = { x -> x / 4 }
-                )
-            }
+            modifier         = Modifier.padding(innerPadding),
+            // Bottom nav tabs: crossfade only — no slide feels more natural
+            enterTransition  = { fadeIn(tween(240)) },
+            exitTransition   = { fadeOut(tween(180)) },
+            popEnterTransition  = { fadeIn(tween(240)) },
+            popExitTransition   = { fadeOut(tween(180)) }
         ) {
-            composable(BottomNavItem.Home.route) { HomeScreen() }
+            composable(BottomNavItem.Home.route)    { HomeScreen() }
             composable(BottomNavItem.Sermons.route) { SermonsScreen(navController) }
-            composable(BottomNavItem.About.route) { AboutScreen() }
+            composable(BottomNavItem.Events.route)  { EventsScreen() }
+            composable(BottomNavItem.About.route)   { AboutScreen() }
 
-            composable("sermon_detail/{sermonId}") { backStackEntry ->
+            // Sermon detail: slide-in from right (hierarchical navigation)
+            composable(
+                route = "sermon_detail/{sermonId}",
+                enterTransition = {
+                    fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it / 4 }
+                },
+                exitTransition = {
+                    fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { -it / 4 }
+                },
+                popEnterTransition = {
+                    fadeIn(tween(300)) + slideInHorizontally(tween(300)) { -it / 4 }
+                },
+                popExitTransition = {
+                    fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { it / 4 }
+                }
+            ) { backStackEntry ->
                 val sermonId = backStackEntry.arguments?.getString("sermonId") ?: ""
                 SermonDetailScreen(sermonId, navController)
             }
