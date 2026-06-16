@@ -6,6 +6,22 @@ plugins {
     alias(libs.plugins.firebase.app.distribution)
 }
 
+val versionNameEnv =
+    System.getenv("VERSION") ?: "1.0.2"
+
+val parts = versionNameEnv
+    .replace("v", "")
+    .split(".")
+
+val major = parts[0].toInt()
+val minor = parts[1].toInt()
+val patch = parts[2].toInt()
+
+val generatedVersionCode =
+    major * 10000 +
+            minor * 100 +
+            patch
+
 android {
     namespace = "co.bleck.shammah"
     compileSdk = 36
@@ -14,8 +30,8 @@ android {
         applicationId = "co.bleck.shammah"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = generatedVersionCode
+        versionName = versionNameEnv
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
