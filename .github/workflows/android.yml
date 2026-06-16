@@ -66,7 +66,7 @@ jobs:
 
       - name: Fastlane Firebase
         if: startsWith(github.ref, 'refs/tags/v')
-        run: fastlane firebase
+        run: bundle exec fastlane firebase
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: firebase.json
