@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,10 +8,10 @@ plugins {
     alias(libs.plugins.firebase.app.distribution)
 }
 
-val versionProperties = java.util.Properties().apply {
+val versionProperties = Properties().apply {
     val versionFile = rootProject.file("version.properties")
     if (versionFile.exists()) {
-        versionFile.inputStream().use { load(it) }
+        versionFile.inputStream().use { stream -> load(stream) }
     }
 }
 
