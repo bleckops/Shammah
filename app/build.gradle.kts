@@ -6,21 +6,18 @@ plugins {
     alias(libs.plugins.firebase.app.distribution)
 }
 
-val versionNameEnv =
-    System.getenv("VERSION") ?: "1.0.2"
+val versionProperties = java.util.Properties().apply {
+    val versionFile = rootProject.file("version.properties")
+    if (versionFile.exists()) {
+        versionFile.inputStream().use { load(it) }
+    }
+}
 
-val parts = versionNameEnv
-    .replace("v", "")
-    .split(".")
+val baseVersionName = versionProperties.getProperty("VERSION_NAME", "1.0.2")
+val versionCodeBase = versionProperties.getProperty("VERSION_CODE_BASE", "100000").toInt()
 
-val major = parts[0].toInt()
-val minor = parts[1].toInt()
-val patch = parts[2].toInt()
-
-val generatedVersionCode =
-    major * 10000 +
-            minor * 100 +
-            patch
+val versionNameEnv = System.getenv("VERSION") ?: baseVersionName
+val versionCodeEnv = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
 
 android {
     namespace = "co.bleck.shammah"
@@ -30,14 +27,30 @@ android {
         applicationId = "co.bleck.shammah"
         minSdk = 26
         targetSdk = 36
-        versionCode = generatedVersionCode
+        versionCode = versionCodeEnv
         versionName = versionNameEnv
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

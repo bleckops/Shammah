@@ -1,16 +1,23 @@
-name: Android CI 
+name: Android CI
 
 on:
   push:
     branches:
+      - dev
       - main
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-
-  build:
-
+  firebase-dev:
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: Dev
 
@@ -21,39 +28,35 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
       - name: Create google-services.json
         run: |
           echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
 
-      - run: chmod +x gradlew
-
-      - name: Diagnostics
+      - name: Set version
         run: |
-          java -version
-          echo "VERSION=$VERSION"
-          echo "VERSION_NAME=$VERSION_NAME"
+          VERSION_NAME=$(grep '^VERSION_NAME=' version.properties | cut -d= -f2)
+          VERSION_CODE_BASE=$(grep '^VERSION_CODE_BASE=' version.properties | cut -d= -f2)
+          echo "VERSION=${VERSION_NAME}-dev.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "VERSION_CODE=$((VERSION_CODE_BASE + ${{ github.run_number }}))" >> $GITHUB_ENV
 
-      - name: Gradle version
-        run: ./gradlew --version
-
-      - run: ./gradlew test
-
-      - run: ./gradlew lint
-
-      - run: ./gradlew assembleRelease
-
-      - name: Fetch tags
-        run: git fetch --tags
-
-      - name: Get tag
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: tag
-        run: echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Decode release keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
       - name: Create Firebase credentials
-        run: |
-            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase.json
+        run: printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > firebase.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - run: chmod +x gradlew
+
+      - run: ./gradlew test assembleRelease
+        env:
+          ANDROID_KEYSTORE_PATH: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -61,12 +64,115 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
-      - name: Install gems
-        run: bundle install
-
       - name: Fastlane Firebase
-        if: startsWith(github.ref, 'refs/tags/v')
         run: bundle exec fastlane firebase
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: firebase.json
+
+  play-internal:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: Dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Create google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
+
+      - name: Set version
+        run: |
+          VERSION_NAME=$(grep '^VERSION_NAME=' version.properties | cut -d= -f2)
+          VERSION_CODE_BASE=$(grep '^VERSION_CODE_BASE=' version.properties | cut -d= -f2)
+          echo "VERSION=${VERSION_NAME}" >> $GITHUB_ENV
+          echo "VERSION_CODE=$((VERSION_CODE_BASE + ${{ github.run_number }}))" >> $GITHUB_ENV
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+
+      - name: Create Play credentials
+        run: printf '%s' "$PLAY_STORE_SERVICE_ACCOUNT_JSON" > play-store.json
+        env:
+          PLAY_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+
+      - run: chmod +x gradlew
+
+      - run: ./gradlew test lint bundleRelease
+        env:
+          ANDROID_KEYSTORE_PATH: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Fastlane Play internal
+        run: bundle exec fastlane play_upload
+        env:
+          PLAY_TRACK: internal
+
+  production:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: Dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Create google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
+
+      - name: Set version from tag
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION_NAME="${VERSION#v}"
+          VERSION_CODE_BASE=$(grep '^VERSION_CODE_BASE=' version.properties | cut -d= -f2)
+          echo "VERSION=${VERSION_NAME}" >> $GITHUB_ENV
+          echo "VERSION_CODE=$((VERSION_CODE_BASE + ${{ github.run_number }}))" >> $GITHUB_ENV
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+
+      - name: Create Play credentials
+        run: printf '%s' "$PLAY_STORE_SERVICE_ACCOUNT_JSON" > play-store.json
+        env:
+          PLAY_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+
+      - run: chmod +x gradlew
+
+      - run: ./gradlew test lint bundleRelease
+        env:
+          ANDROID_KEYSTORE_PATH: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Fastlane Play production
+        run: bundle exec fastlane play_upload
+        env:
+          PLAY_TRACK: production

@@ -23,21 +23,24 @@ platform :android do
 
   desc "Distribute to Firebase"
   lane :firebase do
-    gradle(
-      task: "assemble",
-      build_type: "Release"
-    )
-
     firebase_app_distribution(
       app: ENV["FIREBASE_APP_ID"],
       groups: "internal-testers",
-      release_notes: "Automated build"
+      release_notes: ENV["VERSION"] || "Automated build",
+      android_artifact_type: "APK",
+      android_artifact_path: "app/build/outputs/apk/release/app-release.apk"
     )
   end
 
-  desc "Deploy a new version to the Google Play"
-  lane :deploy do
-    gradle(task: "clean assembleRelease")
-    upload_to_play_store
+  desc "Upload AAB to Google Play (track from PLAY_TRACK env, default internal)"
+  lane :play_upload do
+    upload_to_play_store(
+      track: ENV["PLAY_TRACK"] || "internal",
+      json_key: "play-store.json",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
   end
 end
