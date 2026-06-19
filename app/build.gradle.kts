@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,15 +6,18 @@ plugins {
     alias(libs.plugins.firebase.app.distribution)
 }
 
-val versionProperties = Properties().apply {
+fun loadVersionProperty(key: String, default: String): String {
     val versionFile = rootProject.file("version.properties")
-    if (versionFile.exists()) {
-        versionFile.inputStream().use { stream -> load(stream) }
-    }
+    if (!versionFile.exists()) return default
+    return versionFile.readLines()
+        .map { it.trim() }
+        .firstOrNull { it.startsWith("$key=") && !it.startsWith("#") }
+        ?.substringAfter("=", default)
+        ?.trim()
+        ?: default
 }
 
-val baseVersionName = versionProperties.getProperty("VERSION_NAME", "1.0.2")
-val versionCodeBase = versionProperties.getProperty("VERSION_CODE_BASE", "100000").toInt()
+val baseVersionName = loadVersionProperty("VERSION_NAME", "1.0.2")
 
 val versionNameEnv = System.getenv("VERSION") ?: baseVersionName
 val versionCodeEnv = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
