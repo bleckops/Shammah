@@ -7,8 +7,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class EventRepositoryImpl : EventRepository {
-    private val db = FirebaseFirestore.getInstance()
+class EventRepositoryImpl(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) : EventRepository {
 
     override fun getEvents(): Flow<List<Event>> = callbackFlow {
         val listenerRegistration = db.collection("events")

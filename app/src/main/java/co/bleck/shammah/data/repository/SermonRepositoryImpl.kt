@@ -7,8 +7,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class SermonRepositoryImpl : SermonRepository {
-    private val db = FirebaseFirestore.getInstance()
+class SermonRepositoryImpl(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) : SermonRepository {
 
     override fun getSermons(): Flow<List<Sermon>> = callbackFlow {
         val listenerRegistration = db.collection("sermons")
