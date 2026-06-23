@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 val currentUser by authViewModel.currentUser.collectAsState()
 
                 if (currentUser != null) {
-                    MainScreen()
+                    MainScreen(authViewModel)
                 } else {
                     WelcomeScreen(authViewModel)
                 }

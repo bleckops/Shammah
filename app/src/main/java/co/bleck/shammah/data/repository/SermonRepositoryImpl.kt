@@ -16,7 +16,7 @@ class SermonRepositoryImpl(
             .whereEqualTo("isActive", true)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    closeOnFirestoreError(error)
                     return@addSnapshotListener
                 }
 

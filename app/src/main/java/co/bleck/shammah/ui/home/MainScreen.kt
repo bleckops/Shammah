@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import co.bleck.shammah.ui.auth.AuthViewModel
 import co.bleck.shammah.ui.components.BottomNavItem
 import co.bleck.shammah.ui.components.SERMON_DETAIL_ROUTE
 import co.bleck.shammah.ui.home.events.EventsScreen
@@ -34,7 +35,7 @@ import co.bleck.shammah.ui.home.sermons.SermonsScreen
 import co.bleck.shammah.ui.home.sermons.detail.SermonDetailScreen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     val items = listOf(
         BottomNavItem.Home,
@@ -90,7 +91,7 @@ fun MainScreen() {
             composable(BottomNavItem.Home.route)    { HomeScreen() }
             composable(BottomNavItem.Sermons.route) { SermonsScreen(navController) }
             composable(BottomNavItem.Events.route)  { EventsScreen() }
-            composable(BottomNavItem.About.route)   { AboutScreen() }
+            composable(BottomNavItem.About.route)   { AboutScreen(authViewModel) }
 
             // Sermon detail: slide-in from right (hierarchical navigation)
             composable(

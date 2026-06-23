@@ -27,15 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.bleck.shammah.BuildConfig
 import co.bleck.shammah.R
 import co.bleck.shammah.ui.auth.AuthViewModel
 import co.bleck.shammah.ui.components.StaggeredEntrance
 
 @Composable
-fun AboutScreen(authViewModel: AuthViewModel = viewModel()) {
+fun AboutScreen(authViewModel: AuthViewModel) {
     val currentUser by authViewModel.currentUser.collectAsState()
+    val userUid = currentUser?.uid
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -60,13 +60,13 @@ fun AboutScreen(authViewModel: AuthViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Guest profile card
-                currentUser?.let { user ->
+                userUid?.let { uid ->
                     StaggeredEntrance(index = 1) {
-                        ProfileCard(user = user) { authViewModel.signOut() }
+                        ProfileCard(uid = uid) { authViewModel.signOut() }
                     }
                 }
 
-                val offset = if (currentUser != null) 1 else 0
+                val offset = if (userUid != null) 1 else 0
 
                 StaggeredEntrance(index = 1 + offset) {
                     AboutCard(
@@ -154,9 +154,9 @@ private fun AboutHero() {
 }
 
 @Composable
-fun ProfileCard(user: com.google.firebase.auth.FirebaseUser, onSignOut: () -> Unit) {
+fun ProfileCard(uid: String, onSignOut: () -> Unit) {
     // Generate a subtle gradient avatar from the UID hash
-    val uidHash  = user.uid.hashCode()
+    val uidHash  = uid.hashCode()
     val hue1     = ((uidHash and 0xFF) * 1.41f).coerceIn(0f, 360f)
     val hue2     = ((hue1 + 60f) % 360f)
     val avatarGradient = Brush.linearGradient(
@@ -206,7 +206,7 @@ fun ProfileCard(user: com.google.firebase.auth.FirebaseUser, onSignOut: () -> Un
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text  = "ID: ${user.uid.take(12)}…",
+                        text  = "ID: ${uid.take(12)}…",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
