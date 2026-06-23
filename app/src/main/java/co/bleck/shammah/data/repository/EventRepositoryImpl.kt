@@ -12,6 +12,7 @@ class EventRepositoryImpl : EventRepository {
 
     override fun getEvents(): Flow<List<Event>> = callbackFlow {
         val listenerRegistration = db.collection("events")
+            .whereEqualTo("isActive", true)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -19,8 +20,22 @@ class EventRepositoryImpl : EventRepository {
                 }
 
                 if (snapshot != null) {
-                    val list = snapshot.documents.mapNotNull { it.toObject(Event::class.java) }
-                        .filter { it.isActive }
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        val event = doc.toObject(Event::class.java)
+                        event?.copy(
+                            id = doc.id,
+                            title = (event.title as? String).orEmpty(),
+                            description = (event.description as? String).orEmpty(),
+                            date = event.date ?: java.util.Date(),
+                            time = (event.time as? String).orEmpty(),
+                            location = (event.location as? String).orEmpty(),
+                            imageUrl = (event.imageUrl as? String).orEmpty(),
+                            type = event.type ?: co.bleck.shammah.domain.model.EventType.social,
+                            isActive = event.isActive,
+                            createdAt = event.createdAt ?: java.util.Date(),
+                            updatedAt = event.updatedAt ?: java.util.Date()
+                        )
+                    }
                     trySend(list)
                 }
             }

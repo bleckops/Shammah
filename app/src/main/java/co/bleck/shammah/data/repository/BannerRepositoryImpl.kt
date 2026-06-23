@@ -12,6 +12,7 @@ class BannerRepositoryImpl : BannerRepository {
 
     override fun getBanners(): Flow<List<Banner>> = callbackFlow {
         val listenerRegistration = db.collection("banners")
+            .whereEqualTo("isActive", true)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -19,8 +20,23 @@ class BannerRepositoryImpl : BannerRepository {
                 }
 
                 if (snapshot != null) {
-                    val list = snapshot.documents.mapNotNull { it.toObject(Banner::class.java) }
-                        .filter { it.isActive }
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        val banner = doc.toObject(Banner::class.java)
+                        banner?.copy(
+                            id = doc.id,
+                            imageUrl = (banner.imageUrl as? String).orEmpty(),
+                            title = (banner.title as? String).orEmpty(),
+                            linkUrl = banner.linkUrl as? String,
+                            audioUrl = (banner.audioUrl as? String).orEmpty(),
+                            category = (banner.category as? String).orEmpty(),
+                            speaker = (banner.speaker as? String).orEmpty(),
+                            videoUrl = (banner.videoUrl as? String).orEmpty(),
+                            order = banner.order,
+                            isActive = banner.isActive,
+                            createdAt = banner.createdAt ?: java.util.Date(),
+                            updatedAt = banner.updatedAt ?: java.util.Date()
+                        )
+                    }
                     trySend(list)
                 }
             }

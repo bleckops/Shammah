@@ -83,9 +83,11 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
                         }
                     } else {
                         BannersSection(banners = banners) { url ->
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                            } catch (e: Exception) { /* ignore */ }
+                            if (!url.isNullOrBlank()) {
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                } catch (e: Exception) { /* ignore */ }
+                            }
                         }
                     }
                 }

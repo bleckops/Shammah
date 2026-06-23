@@ -12,6 +12,7 @@ class SermonRepositoryImpl : SermonRepository {
 
     override fun getSermons(): Flow<List<Sermon>> = callbackFlow {
         val listenerRegistration = db.collection("sermons")
+            .whereEqualTo("isActive", true)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -19,8 +20,19 @@ class SermonRepositoryImpl : SermonRepository {
                 }
 
                 if (snapshot != null) {
-                    val list = snapshot.documents.mapNotNull { it.toObject(Sermon::class.java) }
-                        .filter { it.isActive }
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        val sermon = doc.toObject(Sermon::class.java)
+                        sermon?.copy(
+                            id = doc.id,
+                            title = (sermon.title as? String).orEmpty(),
+                            description = (sermon.description as? String).orEmpty(),
+                            date = sermon.date ?: java.util.Date(),
+                            notes = (sermon.notes as? String).orEmpty(),
+                            isActive = sermon.isActive,
+                            createdAt = sermon.createdAt ?: java.util.Date(),
+                            updatedAt = sermon.updatedAt ?: java.util.Date()
+                        )
+                    }
                     trySend(list)
                 }
             }

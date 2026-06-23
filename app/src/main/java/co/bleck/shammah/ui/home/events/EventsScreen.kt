@@ -1,5 +1,8 @@
 package co.bleck.shammah.ui.home.events
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -23,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,7 @@ import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -119,6 +124,7 @@ fun EventsScreen(viewModel: EventsViewModel = viewModel()) {
         ) {
             // ── Calendar header ──────────────────────────────────────────────
             item {
+                val context = LocalContext.current
                 CalendarHeader(
                     currentMonth = calendarState.firstVisibleMonth.yearMonth,
                     onPrevious   = {
@@ -134,6 +140,9 @@ fun EventsScreen(viewModel: EventsViewModel = viewModel()) {
                                 calendarState.firstVisibleMonth.yearMonth.plusMonths(1)
                             )
                         }
+                    },
+                    onExport = {
+                        exportEventsToIcs(context, events)
                     }
                 )
             }
@@ -209,7 +218,8 @@ fun EventsScreen(viewModel: EventsViewModel = viewModel()) {
 private fun CalendarHeader(
     currentMonth: YearMonth,
     onPrevious: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onExport: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -230,7 +240,7 @@ private fun CalendarHeader(
         )
 
         Row(
-            modifier          = Modifier.fillMaxWidth(),
+            modifier          = Modifier.fillMaxWidth().padding(end = 40.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -265,6 +275,20 @@ private fun CalendarHeader(
                     modifier           = Modifier.size(28.dp)
                 )
             }
+        }
+
+        IconButton(
+            onClick  = onExport,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 4.dp, end = 4.dp)
+        ) {
+            Icon(
+                imageVector        = Icons.Filled.Share,
+                contentDescription = "Exportar calendario",
+                tint               = MaterialTheme.colorScheme.onPrimary,
+                modifier           = Modifier.size(24.dp)
+            )
         }
     }
 }
@@ -640,7 +664,152 @@ private fun EventTypeLegend() {
                     Spacer(Modifier.weight(1f))
                 }
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(6.dp))
         }
     }
+}
+
+// ── iCalendar Export Helpers ───────────────────────────────────────────────────
+
+private fun exportEventsToIcs(context: Context, events: List<Event>) {
+    if (events.isEmpty()) {
+        Toast.makeText(context, "No hay eventos para exportar", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val builder = StringBuilder()
+    builder.append("BEGIN:VCALENDAR\r\n")
+    builder.append("VERSION:2.0\r\n")
+    builder.append("PRODID:-//BleckOps//Shammah//ES\r\n")
+    builder.append("CALSCALE:GREGORIAN\r\n")
+    builder.append("METHOD:PUBLISH\r\n")
+    
+    val sdf = java.text.SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
+        timeZone = java.util.TimeZone.getTimeZone("UTC")
+    }
+    val dateOnlyFmt = java.text.SimpleDateFormat("yyyyMMdd", Locale.US)
+    
+    val currentYear = java.time.LocalDate.now().year
+
+    for (event in events) {
+        val id = (event.id as? String).orEmpty()
+        val title = (event.title as? String).orEmpty()
+        val description = (event.description as? String).orEmpty()
+        val location = (event.location as? String).orEmpty()
+        val eventTime = (event.time as? String).orEmpty()
+        val type = event.type ?: EventType.social
+        val eventDate = event.date ?: java.util.Date()
+        val createdAt = event.createdAt ?: java.util.Date()
+
+        builder.append("BEGIN:VEVENT\r\n")
+        builder.append("UID:${id.ifBlank { java.util.UUID.randomUUID().toString() }}\r\n")
+        
+        val createdAtStr = sdf.format(createdAt)
+        builder.append("DTSTAMP:$createdAtStr\r\n")
+        
+        if (type == EventType.birthdays) {
+            // Birthdays match by month+day and recur every year.
+            val cal = java.util.Calendar.getInstance()
+            cal.time = eventDate
+            
+            // Set start date to current year
+            cal.set(java.util.Calendar.YEAR, currentYear)
+            cal.set(java.util.Calendar.HOUR_OF_DAY, 9)
+            cal.set(java.util.Calendar.MINUTE, 0)
+            cal.set(java.util.Calendar.SECOND, 0)
+            
+            val startStr = sdf.format(cal.time)
+            cal.add(java.util.Calendar.HOUR_OF_DAY, 1)
+            val endStr = sdf.format(cal.time)
+            
+            builder.append("DTSTART:$startStr\r\n")
+            builder.append("DTEND:$endStr\r\n")
+            builder.append("RRULE:FREQ=YEARLY\r\n")
+        } else {
+            // Normal event
+            val startCal = java.util.Calendar.getInstance().apply { setTime(eventDate) }
+            var timeParsed = false
+            if (eventTime.isNotBlank()) {
+                try {
+                    val timeClean = eventTime.trim().uppercase()
+                    // Try to parse formats like "12:30 PM", "12:30PM", "18:00", etc.
+                    val matcher = java.util.regex.Pattern.compile("(\\d{1,2}):(\\d{2})\\s*(AM|PM)?").matcher(timeClean)
+                    if (matcher.find()) {
+                        val hourStr = matcher.group(1)
+                        val minuteStr = matcher.group(2)
+                        if (hourStr != null && minuteStr != null) {
+                            var hour = hourStr.toInt()
+                            val minute = minuteStr.toInt()
+                            val ampm = matcher.group(3)
+                            if (ampm != null) {
+                                if (ampm == "PM" && hour < 12) hour += 12
+                                if (ampm == "AM" && hour == 12) hour = 0
+                            }
+                            startCal.set(java.util.Calendar.HOUR_OF_DAY, hour)
+                            startCal.set(java.util.Calendar.MINUTE, minute)
+                            startCal.set(java.util.Calendar.SECOND, 0)
+                            timeParsed = true
+                        }
+                    }
+                } catch (e: Exception) {
+                    // ignore, fallback to all-day
+                }
+            }
+            
+            if (timeParsed) {
+                val startStr = sdf.format(startCal.time)
+                startCal.add(java.util.Calendar.HOUR_OF_DAY, 2) // default duration 2 hours
+                val endStr = sdf.format(startCal.time)
+                builder.append("DTSTART:$startStr\r\n")
+                builder.append("DTEND:$endStr\r\n")
+            } else {
+                // All-day event
+                val startStr = dateOnlyFmt.format(eventDate)
+                val endCal = java.util.Calendar.getInstance().apply {
+                    setTime(eventDate)
+                    add(java.util.Calendar.DAY_OF_MONTH, 1)
+                }
+                val endStr = dateOnlyFmt.format(endCal.time)
+                builder.append("DTSTART;VALUE=DATE:$startStr\r\n")
+                builder.append("DTEND;VALUE=DATE:$endStr\r\n")
+            }
+        }
+        
+        builder.append("SUMMARY:${escapeIcsValue(title)}\r\n")
+        if (description.isNotBlank()) {
+            builder.append("DESCRIPTION:${escapeIcsValue(description)}\r\n")
+        }
+        if (location.isNotBlank()) {
+            builder.append("LOCATION:${escapeIcsValue(location)}\r\n")
+        }
+        builder.append("END:VEVENT\r\n")
+    }
+    builder.append("END:VCALENDAR\r\n")
+    
+    try {
+        val cacheDir = File(context.cacheDir, "calendars")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        val file = File(cacheDir, "eventos_shammah.ics")
+        file.writeText(builder.toString())
+        
+        val authority = "${context.packageName}.fileprovider"
+        val uri = androidx.core.content.FileProvider.getUriForFile(context, authority, file)
+        
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/calendar"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_SUBJECT, "Calendario de Eventos - Iglesia Shammah")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, "Exportar calendario con..."))
+    } catch (e: Exception) {
+        Toast.makeText(context, "Error al exportar calendario: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+    }
+}
+
+private fun escapeIcsValue(value: String): String {
+    return value.replace("\\", "\\\\")
+        .replace(";", "\\;")
+        .replace(",", "\\,")
+        .replace("\n", "\\n")
 }
