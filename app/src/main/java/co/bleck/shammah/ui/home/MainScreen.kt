@@ -1,24 +1,39 @@
 package co.bleck.shammah.ui.home
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -33,6 +48,7 @@ import co.bleck.shammah.ui.components.SERMON_DETAIL_ROUTE
 import co.bleck.shammah.ui.home.events.EventsScreen
 import co.bleck.shammah.ui.home.sermons.SermonsScreen
 import co.bleck.shammah.ui.home.sermons.detail.SermonDetailScreen
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun MainScreen(authViewModel: AuthViewModel) {
@@ -46,36 +62,19 @@ fun MainScreen(authViewModel: AuthViewModel) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = androidx.compose.ui.unit.Dp(3f)
-            ) {
-                val currentRoute = currentRoute(navController)
-                items.forEach { item ->
-                    val selected = currentRoute == item.route
-                    NavigationBarItem(
-                        icon    = { Icon(item.icon, contentDescription = item.title) },
-                        label   = { Text(item.title, style = MaterialTheme.typography.labelSmall) },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState    = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor   = MaterialTheme.colorScheme.onSecondaryContainer,
-                            selectedTextColor   = MaterialTheme.colorScheme.secondary,
-                            indicatorColor      = MaterialTheme.colorScheme.secondaryContainer,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
+            ModernBottomBar(
+                items = items,
+                currentRoute = currentRoute(navController),
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            )
         }
     ) { innerPadding ->
         NavHost(
@@ -124,4 +123,133 @@ fun MainScreen(authViewModel: AuthViewModel) {
 fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
+}
+
+@Composable
+private fun ModernBottomBar(
+    items: List<BottomNavItem>,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .navigationBarsPadding(),
+        shape = RoundedCornerShape(28.dp),
+        tonalElevation = 10.dp,
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+    ) {
+        NavigationBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(horizontal = 6.dp),
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp
+        ) {
+            items.forEach { item ->
+                val selected = currentRoute == item.route
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = { onNavigate(item.route) },
+                    alwaysShowLabel = false,
+                    icon = {
+                        ModernBottomBarItem(
+                            title = item.title,
+                            icon = { tint ->
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.title,
+                                    tint = tint
+                                )
+                            },
+                            selected = selected
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = Color.Unspecified,
+                        unselectedIconColor = Color.Unspecified,
+                        selectedTextColor = Color.Unspecified,
+                        unselectedTextColor = Color.Unspecified
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModernBottomBarItem(
+    title: String,
+    selected: Boolean,
+    icon: @Composable (Color) -> Unit
+) {
+    val iconTint by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(230),
+        label = "bottom_bar_icon_tint"
+    )
+    val labelColor by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(230),
+        label = "bottom_bar_label_tint"
+    )
+    val iconScale by animateFloatAsState(
+        targetValue = if (selected) 1.08f else 1f,
+        animationSpec = spring(dampingRatio = 0.62f, stiffness = 520f),
+        label = "bottom_bar_icon_scale"
+    )
+    val iconLift by animateDpAsState(
+        targetValue = if (selected) (-2).dp else 0.dp,
+        animationSpec = spring(dampingRatio = 0.65f, stiffness = 700f),
+        label = "bottom_bar_icon_lift"
+    )
+    val indicatorColor by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.95f)
+        } else {
+            Color.Transparent
+        },
+        animationSpec = tween(260),
+        label = "bottom_bar_indicator"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = indicatorColor,
+            contentColor = iconTint
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(18.dp))
+                    .scale(iconScale)
+                    .offset(y = iconLift)
+                    .padding(horizontal = 14.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                icon(iconTint)
+            }
+        }
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            color = labelColor
+        )
+    }
 }
