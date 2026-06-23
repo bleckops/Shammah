@@ -7,7 +7,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -31,20 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import co.bleck.shammah.R
 import co.bleck.shammah.domain.model.Banner
+import co.bleck.shammah.ui.components.HeroBanner
 import co.bleck.shammah.ui.components.ShimmerBox
 import co.bleck.shammah.ui.components.StaggeredEntrance
 import kotlinx.coroutines.delay
@@ -141,86 +135,14 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 
 @Composable
 fun HeaderSection(listState: LazyListState = rememberLazyListState()) {
-    // Parallax: as user scrolls, the header scales down slightly
     val firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
     val parallaxScale = (1f - (firstVisibleItemScrollOffset / 3000f)).coerceIn(0.92f, 1f)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer { scaleX = parallaxScale; scaleY = parallaxScale }
-            .height(260.dp)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.82f),
-                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f)
-                    )
-                )
-            )
-            .border(
-                BorderStroke(
-                    0.dp,
-                    MaterialTheme.colorScheme.secondary.copy(alpha = 0f)
-                )
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        // Decorative circles
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-            Box(
-                modifier = Modifier
-                    .offset(x = (-40).dp, y = (-40).dp)
-                    .size(180.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.07f))
-            )
-        }
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-            Box(
-                modifier = Modifier
-                    .offset(x = 30.dp, y = 30.dp)
-                    .size(140.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.04f))
-            )
-        }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier            = Modifier.padding(horizontal = 24.dp)
-        ) {
-            // Actual app logo
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f))
-                    .border(1.5.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.55f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter            = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = "Shammah Logo",
-                    modifier           = Modifier.size(72.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-            Text(
-                text          = "Iglesia Shammah",
-                style         = MaterialTheme.typography.headlineLarge,
-                color         = MaterialTheme.colorScheme.onPrimary,
-                textAlign     = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text      = "Bienvenido a casa",
-                style     = MaterialTheme.typography.titleMedium.copy(fontStyle = FontStyle.Italic),
-                color     = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-            )
-        }
-    }
+    HeroBanner(
+        title         = "Iglesia Shammah",
+        subtitle      = "Bienvenido a casa",
+        parallaxScale = parallaxScale
+    )
 }
 
 @Composable

@@ -229,16 +229,6 @@ private fun CalendarHeader(
             )
             .padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
-        // Decorative subtle circle
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = 30.dp, y = (-20).dp)
-                .size(110.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.05f))
-        )
-
         Row(
             modifier          = Modifier.fillMaxWidth().padding(end = 40.dp),
             verticalAlignment = Alignment.CenterVertically,

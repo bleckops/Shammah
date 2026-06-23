@@ -125,17 +125,6 @@ private fun AboutHero() {
             ),
         contentAlignment = Alignment.Center
     ) {
-        // Decorative background circles
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
-            Box(
-                modifier = Modifier
-                    .offset(x = 40.dp, y = (-30).dp)
-                    .size(180.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.07f))
-            )
-        }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
