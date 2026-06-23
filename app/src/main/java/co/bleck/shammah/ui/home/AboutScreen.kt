@@ -71,7 +71,7 @@ fun AboutScreen(authViewModel: AuthViewModel = viewModel()) {
                 StaggeredEntrance(index = 1 + offset) {
                     AboutCard(
                         title       = "Nuestra Misión",
-                        content     = "Compartir el amor de Cristo, restaurar vidas y extender el Reino de Dios en nuestra comunidad a través de la formación espiritual y el servicio.",
+                        content     = "Ser un reflejo del amor de Cristo para los demás, restaurar vidas y extender el Reino de Dios en nuestra comunidad a través de la formación espiritual y del servicio.",
                         icon        = Icons.Default.Groups,
                         accentColor = MaterialTheme.colorScheme.primary
                     )
@@ -87,7 +87,7 @@ fun AboutScreen(authViewModel: AuthViewModel = viewModel()) {
                 StaggeredEntrance(index = 3 + offset) {
                     AboutCard(
                         title       = "Nuestra Historia",
-                        content     = "Iglesia Shammah nació con el propósito de ser un refugio de paz y crecimiento espiritual en la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar.",
+                        content     = "Iglesia Shammah nació con el propósito de ser un refugio de paz y crecimiento espiritual en la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar. Jehová es nuestra fortaleza y nuestra motivación diaria",
                         icon        = Icons.Default.Church,
                         accentColor = MaterialTheme.colorScheme.tertiary
                     )

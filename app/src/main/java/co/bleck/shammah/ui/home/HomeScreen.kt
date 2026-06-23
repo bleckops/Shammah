@@ -100,7 +100,6 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         InfoSectionHeader("Comunidad")
-                        VisionCard()
                         ServiceHoursCard()
                     }
                 }
