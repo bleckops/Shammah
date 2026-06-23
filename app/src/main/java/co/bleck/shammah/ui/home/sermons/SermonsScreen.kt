@@ -6,8 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -126,10 +126,16 @@ fun SermonsScreen(
                     }
                 }
 
-                itemsIndexed(sermons) { index, sermon ->
+                itemsIndexed(
+                    items = sermons,
+                    key = { _, sermon -> sermon.id }
+                ) { index, sermon ->
                     StaggeredEntrance(index = index + 1) {
                         SermonCard(sermon) {
-                            navController.navigate("sermon_detail/${sermon.id}")
+                            navController.navigate("sermon_detail/${sermon.id}") {
+                                launchSingleTop = true
+                                restoreState = false
+                            }
                         }
                     }
                 }

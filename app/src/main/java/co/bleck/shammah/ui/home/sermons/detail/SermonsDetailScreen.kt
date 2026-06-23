@@ -27,18 +27,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import co.bleck.shammah.ui.components.ShimmerBox
-import co.bleck.shammah.ui.home.sermons.SermonsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SermonDetailScreen(
-    sermonId: String,
-    navController: androidx.navigation.NavController? = null,
-    vm: SermonsViewModel = viewModel()
+    navController: NavController? = null,
+    backStackEntry: NavBackStackEntry,
+    vm: SermonDetailViewModel = viewModel(viewModelStoreOwner = backStackEntry)
 ) {
-    val sermons by vm.sermons.collectAsState()
-    val sermon = sermons.find { it.id == sermonId }
+    val sermon by vm.sermon.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -70,8 +70,8 @@ fun SermonDetailScreen(
             )
         }
     ) { innerPadding ->
-
-        if (sermon == null) {
+        when (val currentSermon = sermon) {
+            null -> {
             // Shimmer loading state
             Column(
                 modifier = Modifier
@@ -84,18 +84,24 @@ fun SermonDetailScreen(
                 ShimmerBox(height = 28.dp, cornerRadius = 8.dp, modifier = Modifier.fillMaxWidth(0.7f))
                 ShimmerBox(height = 240.dp, cornerRadius = 20.dp)
             }
-        } else {
-            var visible by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) { visible = true }
+            }
+            else -> {
+            var visible by remember(currentSermon.id) { mutableStateOf(false) }
+            LaunchedEffect(currentSermon.id) { visible = true }
 
             // Estimate reading time (avg 200 words/min)
-            val wordCount = remember(sermon) {
-                (sermon.notes.ifEmpty { sermon.description }).split("\\s+".toRegex()).size
+            val wordCount = remember(currentSermon.id) {
+                (currentSermon.notes.ifEmpty { currentSermon.description }).split("\\s+".toRegex()).size
             }
             val readingMinutes = maxOf(1, wordCount / 200)
 
-            val dateStr = remember(sermon.date) {
-                java.text.SimpleDateFormat("dd 'de' MMMM 'de' yyyy", java.util.Locale.forLanguageTag("es")).format(sermon.date)
+            val dateStr = remember(currentSermon.id, currentSermon.date) {
+                java.text.SimpleDateFormat("dd 'de' MMMM 'de' yyyy", java.util.Locale.forLanguageTag("es")).format(currentSermon.date)
+            }
+
+            val scrollState = rememberScrollState()
+            LaunchedEffect(currentSermon.id) {
+                scrollState.scrollTo(0)
             }
 
             AnimatedVisibility(
@@ -106,7 +112,7 @@ fun SermonDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(scrollState)
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
@@ -183,9 +189,9 @@ fun SermonDetailScreen(
                     )
 
                     // ── Description summary ────────────────────────────────────
-                    if (sermon.description.isNotEmpty() && sermon.notes.isNotEmpty()) {
+                    if (currentSermon.description.isNotEmpty() && currentSermon.notes.isNotEmpty()) {
                         Text(
-                            text  = sermon.description,
+                            text  = currentSermon.description,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontStyle = FontStyle.Italic
                             ),
@@ -236,7 +242,7 @@ fun SermonDetailScreen(
                                     modifier           = Modifier.size(80.dp).align(Alignment.TopStart)
                                 )
                                 Text(
-                                    text     = if (sermon.notes.isNotEmpty()) sermon.notes else sermon.description,
+                                    text     = if (currentSermon.notes.isNotEmpty()) currentSermon.notes else currentSermon.description,
                                     style    = MaterialTheme.typography.bodyLarge.copy(lineHeight = 28.sp),
                                     color    = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(top = 28.dp, start = 4.dp)
@@ -247,6 +253,7 @@ fun SermonDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                 }
+            }
             }
         }
     }
