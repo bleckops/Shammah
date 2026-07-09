@@ -2,26 +2,32 @@ package co.bleck.shammah.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.bleck.shammah.data.repository.AuthRepositoryImpl
-import co.bleck.shammah.domain.repository.AuthRepository
-import com.google.firebase.auth.FirebaseUser
+import co.bleck.shammah.domain.model.User
+import co.bleck.shammah.domain.usecase.ObserveCurrentUserUseCase
+import co.bleck.shammah.domain.usecase.SignInAnonymouslyUseCase
+import co.bleck.shammah.domain.usecase.SignOutUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed interface AuthUiState {
     object Idle : AuthUiState
     object Loading : AuthUiState
-    data class Success(val user: FirebaseUser) : AuthUiState
+    data class Success(val user: User) : AuthUiState
     data class Error(val message: String) : AuthUiState
 }
 
-class AuthViewModel(
-    private val repository: AuthRepository = AuthRepositoryImpl.getInstance()
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    observeCurrentUser: ObserveCurrentUserUseCase,
+    private val signInAnonymouslyUseCase: SignInAnonymouslyUseCase,
+    private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
-    val currentUser: StateFlow<FirebaseUser?> = repository.currentUser
+    val currentUser: StateFlow<User?> = observeCurrentUser()
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -29,7 +35,7 @@ class AuthViewModel(
     fun signInAnonymously() {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            repository.signInAnonymously()
+            signInAnonymouslyUseCase()
                 .onSuccess { user ->
                     _uiState.value = AuthUiState.Success(user)
                 }
@@ -40,7 +46,7 @@ class AuthViewModel(
     }
 
     fun signOut() {
-        repository.signOut()
+        signOutUseCase()
         _uiState.value = AuthUiState.Idle
     }
 }

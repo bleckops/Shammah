@@ -35,7 +35,7 @@ import co.bleck.shammah.ui.components.StaggeredEntrance
 @Composable
 fun AboutScreen(authViewModel: AuthViewModel) {
     val currentUser by authViewModel.currentUser.collectAsState()
-    val userUid = currentUser?.uid
+    val userUid = currentUser?.id
 
     Surface(
         modifier = Modifier.fillMaxSize(),

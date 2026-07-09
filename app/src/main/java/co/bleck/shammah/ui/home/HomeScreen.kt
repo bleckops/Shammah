@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import co.bleck.shammah.domain.model.Banner
 import co.bleck.shammah.ui.components.HeroBanner
 import co.bleck.shammah.ui.components.ShimmerBox
@@ -44,7 +44,7 @@ import co.bleck.shammah.ui.components.StaggeredEntrance
 import kotlinx.coroutines.delay
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val banners by viewModel.banners.collectAsState()
     val listState = rememberLazyListState()

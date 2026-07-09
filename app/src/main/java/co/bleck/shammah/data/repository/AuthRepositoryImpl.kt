@@ -1,5 +1,7 @@
 package co.bleck.shammah.data.repository
 
+import co.bleck.shammah.data.mapper.UserMapper
+import co.bleck.shammah.domain.model.User
 import co.bleck.shammah.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -7,36 +9,31 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 
-class AuthRepositoryImpl private constructor() : AuthRepository {
-    private val auth = FirebaseAuth.getInstance()
-    private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
-    override val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
+@Singleton
+class AuthRepositoryImpl @Inject constructor(
+    private val auth: FirebaseAuth
+) : AuthRepository {
+
+    private val _currentUser = MutableStateFlow(auth.currentUser?.toDomain())
+    override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     init {
         auth.addAuthStateListener { firebaseAuth ->
-            _currentUser.value = firebaseAuth.currentUser
+            _currentUser.value = firebaseAuth.currentUser?.toDomain()
         }
     }
 
-    companion object {
-        @Volatile
-        private var INSTANCE: AuthRepositoryImpl? = null
-
-        fun getInstance(): AuthRepositoryImpl =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: AuthRepositoryImpl().also { INSTANCE = it }
-            }
-    }
-
-    override suspend fun signInAnonymously(): Result<FirebaseUser> = suspendCancellableCoroutine { continuation ->
+    override suspend fun signInAnonymously(): Result<User> = suspendCancellableCoroutine { continuation ->
         auth.signInAnonymously()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = task.result?.user
                     if (user != null) {
-                        continuation.resume(Result.success(user))
+                        continuation.resume(Result.success(user.toDomain()))
                     } else {
                         continuation.resume(Result.failure(Exception("Usuario nulo tras autenticación")))
                     }
@@ -49,4 +46,6 @@ class AuthRepositoryImpl private constructor() : AuthRepository {
     override fun signOut() {
         auth.signOut()
     }
+
+    private fun FirebaseUser.toDomain(): User = UserMapper.toDomain(this)
 }

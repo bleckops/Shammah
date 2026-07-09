@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import co.bleck.shammah.domain.model.Sermon
 import co.bleck.shammah.ui.components.ShimmerBox
@@ -35,7 +35,7 @@ private val filterOptions = listOf("Todos", "Recientes", "Series")
 @Composable
 fun SermonsScreen(
     navController: NavHostController,
-    vm: SermonsViewModel = viewModel()
+    vm: SermonsViewModel = hiltViewModel()
 ) {
     val sermons by vm.sermons.collectAsState()
     var selectedFilter by remember { mutableStateOf("Todos") }

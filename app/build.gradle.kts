@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.app.distribution)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 fun loadVersionProperty(key: String, default: String): String {
@@ -93,10 +95,15 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.compose.ui.google.fonts)
     implementation(libs.kizitonwose.calendar.compose)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -1,14 +1,19 @@
 package co.bleck.shammah.data.repository
 
+import co.bleck.shammah.data.dto.EventDto
+import co.bleck.shammah.data.mapper.EventMapper
 import co.bleck.shammah.domain.model.Event
 import co.bleck.shammah.domain.repository.EventRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class EventRepositoryImpl(
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+@Singleton
+class EventRepositoryImpl @Inject constructor(
+    private val db: FirebaseFirestore
 ) : EventRepository {
 
     override fun getEvents(): Flow<List<Event>> = callbackFlow {
@@ -22,20 +27,9 @@ class EventRepositoryImpl(
 
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { doc ->
-                        val event = doc.toObject(Event::class.java)
-                        event?.copy(
-                            id = doc.id,
-                            title = (event.title as? String).orEmpty(),
-                            description = (event.description as? String).orEmpty(),
-                            date = event.date ?: java.util.Date(),
-                            time = (event.time as? String).orEmpty(),
-                            location = (event.location as? String).orEmpty(),
-                            imageUrl = (event.imageUrl as? String).orEmpty(),
-                            type = event.type ?: co.bleck.shammah.domain.model.EventType.social,
-                            isActive = event.isActive,
-                            createdAt = event.createdAt ?: java.util.Date(),
-                            updatedAt = event.updatedAt ?: java.util.Date()
-                        )
+                        doc.toObject(EventDto::class.java)?.let { dto ->
+                            EventMapper.toDomain(doc.id, dto)
+                        }
                     }
                     trySend(list)
                 }

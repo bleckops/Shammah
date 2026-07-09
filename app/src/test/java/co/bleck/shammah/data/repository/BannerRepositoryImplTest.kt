@@ -1,6 +1,6 @@
 package co.bleck.shammah.data.repository
 
-import co.bleck.shammah.domain.model.Banner
+import co.bleck.shammah.data.dto.BannerDto
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
@@ -28,13 +28,10 @@ import java.util.Date
 @OptIn(ExperimentalCoroutinesApi::class)
 class BannerRepositoryImplTest {
 
-    // --- Mocks ---
     private lateinit var mockFirestore: FirebaseFirestore
     private lateinit var mockCollection: CollectionReference
     private lateinit var mockQuery: Query
     private lateinit var mockRegistration: ListenerRegistration
-
-    // Captured listener so tests can drive it directly
     private lateinit var capturedListener: EventListener<QuerySnapshot>
 
     @Before
@@ -59,18 +56,15 @@ class BannerRepositoryImplTest {
         on { this.documents } doReturn documents
     }
 
-    private fun makeDocument(banner: Banner): DocumentSnapshot = mock {
-        on { id } doReturn banner.id
-        on { toObject(Banner::class.java) } doReturn banner
+    private fun makeDocument(id: String, dto: BannerDto): DocumentSnapshot = mock {
+        on { this.id } doReturn id
+        on { toObject(BannerDto::class.java) } doReturn dto
     }
-
-    // -------------------------------------------------------------------------
 
     @Test
     fun `emits mapped banner list on snapshot`() = runTest {
         val repo = BannerRepositoryImpl(mockFirestore)
-        val banner = Banner(
-            id = "b1",
+        val dto = BannerDto(
             title = "Test Banner",
             imageUrl = "https://img.example.com/1.jpg",
             isActive = true,
@@ -78,12 +72,12 @@ class BannerRepositoryImplTest {
             updatedAt = Date(0)
         )
 
-        var result: List<Banner>? = null
+        var result: List<co.bleck.shammah.domain.model.Banner>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getBanners().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(banner))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("b1", dto))), null)
         job.join()
 
         assertEquals(1, result?.size)
@@ -95,7 +89,7 @@ class BannerRepositoryImplTest {
     fun `emits empty list when snapshot has no documents`() = runTest {
         val repo = BannerRepositoryImpl(mockFirestore)
 
-        var result: List<Banner>? = null
+        var result: List<co.bleck.shammah.domain.model.Banner>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getBanners().first()
         }
@@ -109,15 +103,14 @@ class BannerRepositoryImplTest {
     @Test
     fun `sanitizes null title and imageUrl with empty strings`() = runTest {
         val repo = BannerRepositoryImpl(mockFirestore)
-        // Banner with default empty strings (simulates null from Firestore)
-        val banner = Banner(id = "b1", title = "", imageUrl = "", isActive = true)
+        val dto = BannerDto(title = null, imageUrl = null, isActive = true)
 
-        var result: List<Banner>? = null
+        var result: List<co.bleck.shammah.domain.model.Banner>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getBanners().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(banner))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("b1", dto))), null)
         job.join()
 
         assertEquals("", result?.get(0)?.title)
@@ -154,7 +147,6 @@ class BannerRepositoryImplTest {
             repo.getBanners().first()
         }
 
-        // Trigger a snapshot so `first()` completes
         capturedListener.onEvent(makeSnapshot(emptyList()), null)
         job.join()
 

@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import co.bleck.shammah.domain.model.Event
 import co.bleck.shammah.domain.model.EventType
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -95,7 +95,7 @@ private fun LocalDate.shortDisplay(): String {
 // ── Main Screen ────────────────────────────────────────────────────────────────
 
 @Composable
-fun EventsScreen(viewModel: EventsViewModel = viewModel()) {
+fun EventsScreen(viewModel: EventsViewModel = hiltViewModel()) {
     val events          by viewModel.events.collectAsState()
     val selectedDate    by viewModel.selectedDate.collectAsState()
     val eventDates      by viewModel.eventDates.collectAsState()

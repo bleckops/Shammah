@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -36,7 +36,7 @@ import co.bleck.shammah.ui.components.ShimmerBox
 fun SermonDetailScreen(
     navController: NavController? = null,
     backStackEntry: NavBackStackEntry,
-    vm: SermonDetailViewModel = viewModel(viewModelStoreOwner = backStackEntry)
+    vm: SermonDetailViewModel = hiltViewModel(backStackEntry)
 ) {
     val sermon by vm.sermon.collectAsState()
 

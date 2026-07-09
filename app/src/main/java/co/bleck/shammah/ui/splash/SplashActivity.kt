@@ -44,10 +44,12 @@ import androidx.compose.ui.unit.sp
 import co.bleck.shammah.R
 import co.bleck.shammah.ui.MainActivity
 import co.bleck.shammah.ui.theme.ShammahTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
+@AndroidEntryPoint
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

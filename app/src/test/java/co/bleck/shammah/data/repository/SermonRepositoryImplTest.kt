@@ -1,6 +1,6 @@
 package co.bleck.shammah.data.repository
 
-import co.bleck.shammah.domain.model.Sermon
+import co.bleck.shammah.data.dto.SermonDto
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
@@ -56,30 +56,27 @@ class SermonRepositoryImplTest {
         on { this.documents } doReturn documents
     }
 
-    private fun makeDocument(sermon: Sermon): DocumentSnapshot = mock {
-        on { id } doReturn sermon.id
-        on { toObject(Sermon::class.java) } doReturn sermon
+    private fun makeDocument(id: String, dto: SermonDto): DocumentSnapshot = mock {
+        on { this.id } doReturn id
+        on { toObject(SermonDto::class.java) } doReturn dto
     }
-
-    // -------------------------------------------------------------------------
 
     @Test
     fun `emits mapped sermon list on snapshot`() = runTest {
         val repo = SermonRepositoryImpl(mockFirestore)
-        val sermon = Sermon(
-            id = "s1",
+        val dto = SermonDto(
             title = "Walking by Faith",
             description = "2 Corinthians 5:7",
             date = Date(0),
             isActive = true
         )
 
-        var result: List<Sermon>? = null
+        var result: List<co.bleck.shammah.domain.model.Sermon>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getSermons().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(sermon))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("s1", dto))), null)
         job.join()
 
         assertEquals(1, result?.size)
@@ -91,7 +88,7 @@ class SermonRepositoryImplTest {
     fun `emits empty list when snapshot has no documents`() = runTest {
         val repo = SermonRepositoryImpl(mockFirestore)
 
-        var result: List<Sermon>? = null
+        var result: List<co.bleck.shammah.domain.model.Sermon>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getSermons().first()
         }
@@ -105,14 +102,14 @@ class SermonRepositoryImplTest {
     @Test
     fun `sanitizes null title and description with empty strings`() = runTest {
         val repo = SermonRepositoryImpl(mockFirestore)
-        val sermon = Sermon(id = "s1", title = "", description = "", isActive = true)
+        val dto = SermonDto(title = null, description = null, isActive = true)
 
-        var result: List<Sermon>? = null
+        var result: List<co.bleck.shammah.domain.model.Sermon>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getSermons().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(sermon))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("s1", dto))), null)
         job.join()
 
         assertEquals("", result?.get(0)?.title)
@@ -122,14 +119,14 @@ class SermonRepositoryImplTest {
     @Test
     fun `sanitizes null notes with empty string`() = runTest {
         val repo = SermonRepositoryImpl(mockFirestore)
-        val sermon = Sermon(id = "s1", title = "No Notes", notes = "", isActive = true)
+        val dto = SermonDto(title = "No Notes", notes = null, isActive = true)
 
-        var result: List<Sermon>? = null
+        var result: List<co.bleck.shammah.domain.model.Sermon>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getSermons().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(sermon))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("s1", dto))), null)
         job.join()
 
         assertEquals("", result?.get(0)?.notes)

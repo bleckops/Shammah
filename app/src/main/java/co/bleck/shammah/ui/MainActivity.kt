@@ -6,19 +6,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import co.bleck.shammah.ui.auth.AuthViewModel
 import co.bleck.shammah.ui.auth.WelcomeScreen
 import co.bleck.shammah.ui.home.MainScreen
 import co.bleck.shammah.ui.theme.ShammahTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ShammahTheme {
-                val authViewModel: AuthViewModel = viewModel()
+                val authViewModel: AuthViewModel = hiltViewModel()
                 val currentUser by authViewModel.currentUser.collectAsState()
 
                 if (currentUser != null) {

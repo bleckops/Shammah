@@ -1,25 +1,23 @@
 package co.bleck.shammah.fake
 
+import co.bleck.shammah.domain.model.User
 import co.bleck.shammah.domain.repository.AuthRepository
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FakeAuthRepository(initialUser: FirebaseUser? = null) : AuthRepository {
+class FakeAuthRepository(initialUser: User? = null) : AuthRepository {
 
     private val _currentUser = MutableStateFlow(initialUser)
-    override val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
+    override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
-    /** Controls whether the next [signInAnonymously] call succeeds or fails. */
-    var signInResult: Result<FirebaseUser> = Result.failure(IllegalStateException("No mock user configured"))
+    var signInResult: Result<User> = Result.failure(IllegalStateException("No mock user configured"))
 
-    /** Simulates a user becoming signed in or out externally. */
-    fun setUser(user: FirebaseUser?) {
+    fun setUser(user: User?) {
         _currentUser.value = user
     }
 
-    override suspend fun signInAnonymously(): Result<FirebaseUser> = signInResult
+    override suspend fun signInAnonymously(): Result<User> = signInResult
 
     override fun signOut() {
         _currentUser.value = null

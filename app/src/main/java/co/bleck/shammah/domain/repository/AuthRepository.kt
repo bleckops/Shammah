@@ -1,10 +1,10 @@
 package co.bleck.shammah.domain.repository
 
-import com.google.firebase.auth.FirebaseUser
+import co.bleck.shammah.domain.model.User
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
-    val currentUser: StateFlow<FirebaseUser?>
-    suspend fun signInAnonymously(): Result<FirebaseUser>
+    val currentUser: StateFlow<User?>
+    suspend fun signInAnonymously(): Result<User>
     fun signOut()
 }

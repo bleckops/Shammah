@@ -1,6 +1,6 @@
 package co.bleck.shammah.data.repository
 
-import co.bleck.shammah.domain.model.Event
+import co.bleck.shammah.data.dto.EventDto
 import co.bleck.shammah.domain.model.EventType
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -57,30 +57,27 @@ class EventRepositoryImplTest {
         on { this.documents } doReturn documents
     }
 
-    private fun makeDocument(event: Event): DocumentSnapshot = mock {
-        on { id } doReturn event.id
-        on { toObject(Event::class.java) } doReturn event
+    private fun makeDocument(id: String, dto: EventDto): DocumentSnapshot = mock {
+        on { this.id } doReturn id
+        on { toObject(EventDto::class.java) } doReturn dto
     }
-
-    // -------------------------------------------------------------------------
 
     @Test
     fun `emits mapped event list on snapshot`() = runTest {
         val repo = EventRepositoryImpl(mockFirestore)
-        val event = Event(
-            id = "e1",
+        val dto = EventDto(
             title = "Youth Camp",
             type = EventType.camp,
             date = Date(0),
             isActive = true
         )
 
-        var result: List<Event>? = null
+        var result: List<co.bleck.shammah.domain.model.Event>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getEvents().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(event))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("e1", dto))), null)
         job.join()
 
         assertEquals(1, result?.size)
@@ -92,7 +89,7 @@ class EventRepositoryImplTest {
     fun `emits empty list when snapshot has no documents`() = runTest {
         val repo = EventRepositoryImpl(mockFirestore)
 
-        var result: List<Event>? = null
+        var result: List<co.bleck.shammah.domain.model.Event>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getEvents().first()
         }
@@ -106,15 +103,14 @@ class EventRepositoryImplTest {
     @Test
     fun `defaults EventType to social when type field is null`() = runTest {
         val repo = EventRepositoryImpl(mockFirestore)
-        // Simulate Firestore returning an event where type gets defaulted
-        val event = Event(id = "e1", title = "Unnamed", type = EventType.social)
+        val dto = EventDto(title = "Unnamed", type = null)
 
-        var result: List<Event>? = null
+        var result: List<co.bleck.shammah.domain.model.Event>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getEvents().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(event))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("e1", dto))), null)
         job.join()
 
         assertEquals(EventType.social, result?.get(0)?.type)
@@ -123,14 +119,14 @@ class EventRepositoryImplTest {
     @Test
     fun `sanitizes null title and location with empty strings`() = runTest {
         val repo = EventRepositoryImpl(mockFirestore)
-        val event = Event(id = "e1", title = "", location = "", isActive = true)
+        val dto = EventDto(title = null, location = null, isActive = true)
 
-        var result: List<Event>? = null
+        var result: List<co.bleck.shammah.domain.model.Event>? = null
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             result = repo.getEvents().first()
         }
 
-        capturedListener.onEvent(makeSnapshot(listOf(makeDocument(event))), null)
+        capturedListener.onEvent(makeSnapshot(listOf(makeDocument("e1", dto))), null)
         job.join()
 
         assertEquals("", result?.get(0)?.title)
