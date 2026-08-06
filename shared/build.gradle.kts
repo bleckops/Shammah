@@ -28,22 +28,18 @@ val generateWebFirebaseConfig by tasks.registering {
             return fromProject ?: fromLocal ?: fromEnv ?: default
         }
 
-        val projectId = prop("firebase.web.projectId", "FIREBASE_WEB_PROJECT_ID", "shammah-cf23e")
-        val apiKey = prop(
-            "firebase.web.apiKey",
-            "FIREBASE_WEB_API_KEY",
-            "AIzaSyAzOqHPi6vsrh4rcO7l4IjJIb7kTGFw96g",
-        )
+        val projectId = prop("firebase.web.projectId", "FIREBASE_WEB_PROJECT_ID", "")
+        val apiKey = prop("firebase.web.apiKey", "FIREBASE_WEB_API_KEY", "")
         val appId = prop("firebase.web.appId", "FIREBASE_WEB_APP_ID", "")
         val authDomain = prop(
             "firebase.web.authDomain",
             "FIREBASE_WEB_AUTH_DOMAIN",
-            "$projectId.firebaseapp.com",
+            if (projectId.isNotBlank()) "$projectId.firebaseapp.com" else "",
         )
         val storageBucket = prop(
             "firebase.web.storageBucket",
             "FIREBASE_WEB_STORAGE_BUCKET",
-            "$projectId.appspot.com",
+            if (projectId.isNotBlank()) "$projectId.appspot.com" else "",
         )
         val messagingSenderId = prop(
             "firebase.web.messagingSenderId",
@@ -61,9 +57,10 @@ val generateWebFirebaseConfig by tasks.registering {
             /**
              * Public Firebase web client config for the same project as the Android app.
              *
-             * Override via root `local.properties` / env and re-run:
+             * Values come from root `local.properties` / env via:
              * `./gradlew :shared:generateWebFirebaseConfig` (rewrites this file).
              *
+             * Do **not** commit real API keys here — keep them only in local.properties or CI secrets.
              * See also webApp/README.md.
              */
             internal object WebFirebaseConfig {

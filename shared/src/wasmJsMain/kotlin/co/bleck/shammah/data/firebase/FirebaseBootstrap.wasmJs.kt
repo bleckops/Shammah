@@ -12,19 +12,22 @@ actual object FirebaseBootstrap {
     actual fun initialize() {
         if (initialized) return
 
+        val apiKey = WebFirebaseConfig.apiKey
         val appId = WebFirebaseConfig.appId
-        if (appId.isBlank()) {
+        val projectId = WebFirebaseConfig.projectId
+        if (apiKey.isBlank() || appId.isBlank() || projectId.isBlank()) {
             error(
-                "Missing firebase.web.appId. Set it in local.properties (or FIREBASE_WEB_APP_ID) " +
-                    "to the Web app ID from the Firebase console.",
+                "Missing Firebase web config. Set firebase.web.apiKey, firebase.web.appId, and " +
+                    "firebase.web.projectId in local.properties (or FIREBASE_WEB_* env vars), " +
+                    "then run ./gradlew :shared:generateWebFirebaseConfig. See webApp/README.md.",
             )
         }
 
         val config = createFirebaseJsConfig(
-            apiKey = WebFirebaseConfig.apiKey,
-            authDomain = WebFirebaseConfig.authDomain,
-            projectId = WebFirebaseConfig.projectId,
-            storageBucket = WebFirebaseConfig.storageBucket,
+            apiKey = apiKey,
+            authDomain = WebFirebaseConfig.authDomain.ifBlank { "$projectId.firebaseapp.com" },
+            projectId = projectId,
+            storageBucket = WebFirebaseConfig.storageBucket.ifBlank { "$projectId.appspot.com" },
             messagingSenderId = WebFirebaseConfig.messagingSenderId,
             appId = appId,
         )
