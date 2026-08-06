@@ -10,10 +10,10 @@ package co.bleck.shammah.data.firebase
  * See also webApp/README.md.
  */
 internal object WebFirebaseConfig {
-    const val apiKey: String = "AIzaSyC0nDV_OFmm9oKd5mfGOEGneHsgatTr434"
-    const val appId: String = "1:899239260269:web:f1150c6690c577057d8f64"
-    const val projectId: String = "shammah-cf23e"
-    const val authDomain: String = "shammah-cf23e.firebaseapp.com"
-    const val storageBucket: String = "shammah-cf23e.firebasestorage.app"
-    const val messagingSenderId: String = "899239260269"
+    const val apiKey: String = ""
+    const val appId: String = ""
+    const val projectId: String = ""
+    const val authDomain: String = ""
+    const val storageBucket: String = ""
+    const val messagingSenderId: String = ""
 }
