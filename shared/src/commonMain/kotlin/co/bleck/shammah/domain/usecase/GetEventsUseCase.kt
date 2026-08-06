@@ -1,0 +1,9 @@
+package co.bleck.shammah.domain.usecase
+
+import co.bleck.shammah.domain.model.Event
+import co.bleck.shammah.domain.repository.EventRepository
+import kotlinx.coroutines.flow.Flow
+
+class GetEventsUseCase(private val repository: EventRepository) {
+    operator fun invoke(): Flow<List<Event>> = repository.getEvents()
+}

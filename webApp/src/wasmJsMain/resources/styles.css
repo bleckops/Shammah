@@ -1,0 +1,17 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Match Shammah light background so canvas edges feel intentional on wide screens */
+  background: #fffbf0;
+}
+
+canvas {
+  outline: none;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}

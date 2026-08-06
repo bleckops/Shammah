@@ -28,7 +28,7 @@ platform :android do
       groups: "internal-testers",
       release_notes: ENV["VERSION"] || "Automated build",
       android_artifact_type: "APK",
-      android_artifact_path: "app/build/outputs/apk/release/app-release.apk"
+      android_artifact_path: "androidApp/build/outputs/apk/release/androidApp-release.apk"
     )
   end
 
@@ -37,7 +37,7 @@ platform :android do
     upload_to_play_store(
       track: ENV["PLAY_TRACK"] || "internal",
       json_key: "play-store.json",
-      aab: "app/build/outputs/bundle/release/app-release.aab",
+      aab: "androidApp/build/outputs/bundle/release/androidApp-release.aab",
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true

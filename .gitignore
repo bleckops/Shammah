@@ -34,4 +34,6 @@ release.keystore
 
 # Android Profiling
 *.hprof
-#properties
+
+# Kotlin metadata / caches
+.kotlin/
