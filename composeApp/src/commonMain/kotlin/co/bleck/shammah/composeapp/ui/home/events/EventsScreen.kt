@@ -16,9 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Fireplace
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NaturePeople
@@ -71,15 +73,17 @@ fun EventType.color(): Color = when (this) {
     EventType.prayer     -> Color(0xFF2196F3)
     EventType.social     -> Color(0xFFFF9800)
     EventType.evangelism -> Color(0xFFFF5722)
+    EventType.discipleship -> Color(0xFF673AB7)
 }
 
 fun EventType.icon(): ImageVector = when (this) {
     EventType.birthdays  -> Icons.Filled.Cake
     EventType.retreat    -> Icons.Filled.SelfImprovement
     EventType.camp       -> Icons.Filled.NaturePeople
-    EventType.prayer     -> Icons.Filled.FavoriteBorder
+    EventType.prayer     -> Icons.Filled.Fireplace
     EventType.social     -> Icons.Filled.Groups
     EventType.evangelism -> Icons.Filled.RecordVoiceOver
+    EventType.discipleship -> Icons.Filled.Book
 }
 
 fun EventType.label(): String = when (this) {
@@ -89,6 +93,7 @@ fun EventType.label(): String = when (this) {
     EventType.prayer     -> "Oración"
     EventType.social     -> "Social"
     EventType.evangelism -> "Evangelismo"
+    EventType.discipleship -> "Discipulado"
 }
 
 // ── Month name helper ──────────────────────────────────────────────────────────

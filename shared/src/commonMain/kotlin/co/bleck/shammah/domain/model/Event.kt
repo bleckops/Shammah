@@ -11,6 +11,7 @@ enum class EventType {
     prayer,
     social,
     evangelism,
+    discipleship
 }
 
 data class Event(
