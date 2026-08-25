@@ -74,7 +74,7 @@ fun AboutScreen(authViewModel: AuthViewModel) {
                 StaggeredEntrance(index = 1 + offset) {
                     AboutCard(
                         title       = "Nuestra Misión",
-                        content     = "Ser un reflejo del amor de Cristo para los demás, restaurar vidas y extender el Reino de Dios en nuestra comunidad a través de la formación espiritual y del servicio.",
+                        content     = "Formar a Cristo en cada uno de los miembros de su iglesia, esto se mostrará en corazones que oran, que leen su Palabra, que se preocupan por otros miembros de la Iglesia y hermanos en la fe, así como que tienen compasión por los que aún no conocen a Dios.",
                         icon        = Icons.Default.Groups,
                         accentColor = MaterialTheme.colorScheme.primary
                     )
@@ -82,7 +82,7 @@ fun AboutScreen(authViewModel: AuthViewModel) {
                 StaggeredEntrance(index = 2 + offset) {
                     AboutCard(
                         title       = "Nuestra Visión",
-                        content     = "Ser una iglesia apasionada por la presencia de Dios, donde cada persona es formada por Cristo para transformar su entorno.",
+                        content     = "Perseverando en tratar con todas nuestras fuerzas cumplir la voluntad de Dios, para ser hallados por Él sin mancha e irreprensibles, en paz.",
                         icon        = Icons.Default.Lightbulb,
                         accentColor = MaterialTheme.colorScheme.secondary
                     )
@@ -90,7 +90,7 @@ fun AboutScreen(authViewModel: AuthViewModel) {
                 StaggeredEntrance(index = 3 + offset) {
                     AboutCard(
                         title       = "Nuestra Historia",
-                        content     = "Iglesia Shammah nació con el propósito de ser un refugio de paz y crecimiento espiritual en la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar. Jehová es nuestra fortaleza y nuestra motivación diaria",
+                        content     = "Iglesia Shammah nació con el propósito de glorificar a Dios en un mundo caido dentro de la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar. Jehová es nuestro gozo, nuestra fortaleza y nuestra motivación diaria para transmitir este mensaje",
                         icon        = Icons.Default.Church,
                         accentColor = MaterialTheme.colorScheme.tertiary
                     )
