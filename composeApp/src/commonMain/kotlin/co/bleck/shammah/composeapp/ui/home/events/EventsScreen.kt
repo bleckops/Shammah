@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import co.bleck.shammah.composeapp.platform.PlatformActions
 import co.bleck.shammah.composeapp.ui.components.fullNameEs
 import co.bleck.shammah.composeapp.ui.components.narrowNameEs
@@ -106,7 +107,10 @@ private fun YearMonth.displayName(): String {
 // ── Main Screen ────────────────────────────────────────────────────────────────
 
 @Composable
-fun EventsScreen(viewModel: EventsViewModel = koinViewModel()) {
+fun EventsScreen(
+    navController: NavHostController? = null,
+    viewModel: EventsViewModel = koinViewModel()
+) {
     val actions = koinInject<PlatformActions>()
     val events          by viewModel.events.collectAsState()
     val selectedDate    by viewModel.selectedDate.collectAsState()
@@ -215,7 +219,14 @@ fun EventsScreen(viewModel: EventsViewModel = koinViewModel()) {
                 }
             } else {
                 items(selectedEvents, key = { it.id }) { event ->
-                    EventCard(event = event)
+                    EventCard(
+                        event = event,
+                        onClick = {
+                            navController?.navigate("event_detail/${event.id}") {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
                     Spacer(Modifier.height(10.dp))
                 }
             }
@@ -430,7 +441,10 @@ private fun EventListSectionHeader(date: LocalDate, count: Int) {
 // ── Event card ─────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EventCard(event: Event) {
+private fun EventCard(
+    event: Event,
+    onClick: (() -> Unit) = {}
+) {
     val typeColor  = event.type.color()
     val typeIcon   = event.type.icon()
     val typeLabel  = event.type.label()
@@ -444,7 +458,8 @@ private fun EventCard(event: Event) {
         colors    = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        onClick   = onClick
     ) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             // Color accent left border

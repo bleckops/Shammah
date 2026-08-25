@@ -13,6 +13,7 @@ import co.bleck.shammah.domain.usecase.GetBannersUseCase
 import co.bleck.shammah.domain.usecase.GetEventsUseCase
 import co.bleck.shammah.domain.usecase.GetSermonsUseCase
 import co.bleck.shammah.domain.usecase.ObserveCurrentUserUseCase
+import co.bleck.shammah.domain.usecase.ObserveEventByIdUseCase
 import co.bleck.shammah.domain.usecase.ObserveSermonByIdUseCase
 import co.bleck.shammah.domain.usecase.ProjectEventDatesUseCase
 import co.bleck.shammah.domain.usecase.SignInAnonymouslyUseCase
@@ -30,6 +31,7 @@ val sharedModule = module {
     factory { GetSermonsUseCase(get()) }
     factory { ObserveCurrentUserUseCase(get()) }
     factory { ObserveSermonByIdUseCase(get()) }
+    factory { ObserveEventByIdUseCase(get()) }
     factory { SignInAnonymouslyUseCase(get()) }
     factory { SignOutUseCase(get()) }
     factory { FilterEventsForDateUseCase() }

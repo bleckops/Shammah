@@ -3,6 +3,7 @@ package co.bleck.shammah.composeapp.di
 import co.bleck.shammah.composeapp.ui.auth.AuthViewModel
 import co.bleck.shammah.composeapp.ui.home.HomeViewModel
 import co.bleck.shammah.composeapp.ui.home.events.EventsViewModel
+import co.bleck.shammah.composeapp.ui.home.events.detail.EventDetailViewModel
 import co.bleck.shammah.composeapp.ui.home.sermons.SermonsViewModel
 import co.bleck.shammah.composeapp.ui.home.sermons.detail.SermonDetailViewModel
 import org.koin.core.module.dsl.viewModel
@@ -15,4 +16,5 @@ val composeModule = module {
     viewModelOf(::SermonsViewModel)
     viewModelOf(::EventsViewModel)
     viewModel { (sermonId: String) -> SermonDetailViewModel(sermonId, get()) }
+    viewModel { (eventId: String) -> EventDetailViewModel(eventId, get()) }
 }

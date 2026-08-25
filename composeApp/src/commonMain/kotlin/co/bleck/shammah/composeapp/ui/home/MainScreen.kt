@@ -56,9 +56,11 @@ import co.bleck.shammah.composeapp.ui.auth.AuthViewModel
 import co.bleck.shammah.composeapp.ui.components.AdaptiveLayout
 import co.bleck.shammah.composeapp.ui.components.AdaptiveMetrics
 import co.bleck.shammah.composeapp.ui.components.BottomNavItem
+import co.bleck.shammah.composeapp.ui.components.EVENT_DETAIL_ROUTE
 import co.bleck.shammah.composeapp.ui.components.SERMON_DETAIL_ROUTE
 import co.bleck.shammah.composeapp.ui.components.adaptiveContentWidth
 import co.bleck.shammah.composeapp.ui.home.events.EventsScreen
+import co.bleck.shammah.composeapp.ui.home.events.detail.EventDetailScreen
 import co.bleck.shammah.composeapp.ui.home.sermons.SermonsScreen
 import co.bleck.shammah.composeapp.ui.home.sermons.detail.SermonDetailScreen
 
@@ -225,7 +227,7 @@ private fun AppNavHost(
     ) {
         composable(BottomNavItem.Home.route) { HomeScreen() }
         composable(BottomNavItem.Sermons.route) { SermonsScreen(navController) }
-        composable(BottomNavItem.Events.route) { EventsScreen() }
+        composable(BottomNavItem.Events.route) { EventsScreen(navController) }
         composable(BottomNavItem.About.route) { AboutScreen(authViewModel) }
 
         composable(
@@ -248,6 +250,29 @@ private fun AppNavHost(
         ) { backStackEntry ->
             key(backStackEntry.id) {
                 SermonDetailScreen(navController, backStackEntry)
+            }
+        }
+
+        composable(
+            route = EVENT_DETAIL_ROUTE,
+            arguments = listOf(
+                navArgument("eventId") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it / 4 }
+            },
+            exitTransition = {
+                fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { -it / 4 }
+            },
+            popEnterTransition = {
+                fadeIn(tween(300)) + slideInHorizontally(tween(300)) { -it / 4 }
+            },
+            popExitTransition = {
+                fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { it / 4 }
+            }
+        ) { backStackEntry ->
+            key(backStackEntry.id) {
+                EventDetailScreen(navController, backStackEntry)
             }
         }
     }

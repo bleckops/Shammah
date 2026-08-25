@@ -15,3 +15,4 @@ sealed class BottomNavItem(val title: String, val route: String, val icon: Image
 }
 
 const val SERMON_DETAIL_ROUTE = "sermon_detail/{sermonId}"
+const val EVENT_DETAIL_ROUTE  = "event_detail/{eventId}"
