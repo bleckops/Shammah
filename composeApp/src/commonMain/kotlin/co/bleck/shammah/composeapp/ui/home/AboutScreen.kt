@@ -31,6 +31,7 @@ import co.bleck.shammah.composeapp.ui.auth.AuthViewModel
 import co.bleck.shammah.composeapp.ui.components.StaggeredEntrance
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import shammah.composeapp.generated.resources.Res
 import shammah.composeapp.generated.resources.logo_foreground
 
@@ -39,6 +40,22 @@ fun AboutScreen(authViewModel: AuthViewModel) {
     val actions = koinInject<PlatformActions>()
     val currentUser by authViewModel.currentUser.collectAsState()
     val userUid = currentUser?.id
+
+    val aboutViewModel: AboutViewModel = koinViewModel()
+    val aboutContent by aboutViewModel.content.collectAsState()
+
+    // Built-in fallback copy used when a Resource document is missing, empty, or
+    // unreadable (e.g. PERMISSION_DENIED on the `resources` collection).
+    val missionText = aboutContent.mission?.description?.takeIf { it.isNotBlank() }
+        ?: "Formar a Cristo en cada uno de los miembros de su iglesia, esto se mostrará en corazones que oran, que leen su Palabra, que se preocupan por otros miembros de la Iglesia y hermanos en la fe, así como que tienen compasión por los que aún no conocen a Dios."
+    val visionText = aboutContent.vision?.description?.takeIf { it.isNotBlank() }
+        ?: "Perseverando en tratar con todas nuestras fuerzas cumplir la voluntad de Dios, para ser hallados por Él sin mancha e irreprensibles, en paz."
+    val aboutUsText = aboutContent.aboutUs?.description?.takeIf { it.isNotBlank() }
+        ?: "Iglesia Shammah nació con el propósito de glorificar a Dios en un mundo caido dentro de la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar. Jehová es nuestro gozo, nuestra fortaleza y nuestra motivación diaria para transmitir este mensaje"
+
+    val missionTitle = aboutContent.mission?.title?.takeIf { it.isNotBlank() } ?: "Nuestra Misión"
+    val visionTitle = aboutContent.vision?.title?.takeIf { it.isNotBlank() } ?: "Nuestra Visión"
+    val aboutUsTitle = aboutContent.aboutUs?.title?.takeIf { it.isNotBlank() } ?: "Nuestra Historia"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -73,24 +90,24 @@ fun AboutScreen(authViewModel: AuthViewModel) {
 
                 StaggeredEntrance(index = 1 + offset) {
                     AboutCard(
-                        title       = "Nuestra Misión",
-                        content     = "Formar a Cristo en cada uno de los miembros de su iglesia, esto se mostrará en corazones que oran, que leen su Palabra, que se preocupan por otros miembros de la Iglesia y hermanos en la fe, así como que tienen compasión por los que aún no conocen a Dios.",
+                        title       = missionTitle,
+                        content     = missionText,
                         icon        = Icons.Default.Groups,
                         accentColor = MaterialTheme.colorScheme.primary
                     )
                 }
                 StaggeredEntrance(index = 2 + offset) {
                     AboutCard(
-                        title       = "Nuestra Visión",
-                        content     = "Perseverando en tratar con todas nuestras fuerzas cumplir la voluntad de Dios, para ser hallados por Él sin mancha e irreprensibles, en paz.",
+                        title       = visionTitle,
+                        content     = visionText,
                         icon        = Icons.Default.Lightbulb,
                         accentColor = MaterialTheme.colorScheme.secondary
                     )
                 }
                 StaggeredEntrance(index = 3 + offset) {
                     AboutCard(
-                        title       = "Nuestra Historia",
-                        content     = "Iglesia Shammah nació con el propósito de glorificar a Dios en un mundo caido dentro de la Ciudad de México. Desde nuestro inicio, hemos buscado ser 'Formados por Cristo' en cada paso de nuestro caminar. Jehová es nuestro gozo, nuestra fortaleza y nuestra motivación diaria para transmitir este mensaje",
+                        title       = aboutUsTitle,
+                        content     = aboutUsText,
                         icon        = Icons.Default.Church,
                         accentColor = MaterialTheme.colorScheme.tertiary
                     )

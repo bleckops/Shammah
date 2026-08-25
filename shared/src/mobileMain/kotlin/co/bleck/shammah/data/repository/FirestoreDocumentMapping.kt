@@ -4,6 +4,7 @@ package co.bleck.shammah.data.repository
 
 import co.bleck.shammah.data.dto.BannerDto
 import co.bleck.shammah.data.dto.EventDto
+import co.bleck.shammah.data.dto.ResourceDto
 import co.bleck.shammah.data.dto.SermonDto
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.Timestamp
@@ -41,6 +42,16 @@ internal fun DocumentSnapshot.toEventDto(): EventDto = EventDto(
     location = stringField("location"),
     imageUrl = stringField("imageUrl"),
     type = stringField("type"),
+    isActive = boolField("isActive", default = true),
+    createdAt = instantField("createdAt"),
+    updatedAt = instantField("updatedAt"),
+)
+
+internal fun DocumentSnapshot.toResourceDto(): ResourceDto = ResourceDto(
+    title = stringField("title"),
+    description = stringField("description"),
+    type = stringField("type"),
+    url = stringField("url"),
     isActive = boolField("isActive", default = true),
     createdAt = instantField("createdAt"),
     updatedAt = instantField("updatedAt"),

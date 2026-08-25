@@ -4,6 +4,7 @@ package co.bleck.shammah.data.firebase
 
 import co.bleck.shammah.data.dto.BannerDto
 import co.bleck.shammah.data.dto.EventDto
+import co.bleck.shammah.data.dto.ResourceDto
 import co.bleck.shammah.data.dto.SermonDto
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -68,6 +69,16 @@ internal fun JsonObject.toEventDto(): EventDto = EventDto(
     location = stringField("location"),
     imageUrl = stringField("imageUrl"),
     type = stringField("type"),
+    isActive = boolField("isActive", default = true),
+    createdAt = instantField("createdAt"),
+    updatedAt = instantField("updatedAt"),
+)
+
+internal fun JsonObject.toResourceDto(): ResourceDto = ResourceDto(
+    title = stringField("title"),
+    description = stringField("description"),
+    type = stringField("type"),
+    url = stringField("url"),
     isActive = boolField("isActive", default = true),
     createdAt = instantField("createdAt"),
     updatedAt = instantField("updatedAt"),

@@ -2,11 +2,13 @@ package co.bleck.shammah.composeapp.fake
 
 import co.bleck.shammah.domain.model.Banner
 import co.bleck.shammah.domain.model.Event
+import co.bleck.shammah.domain.model.Resource
 import co.bleck.shammah.domain.model.Sermon
 import co.bleck.shammah.domain.model.User
 import co.bleck.shammah.domain.repository.AuthRepository
 import co.bleck.shammah.domain.repository.BannerRepository
 import co.bleck.shammah.domain.repository.EventRepository
+import co.bleck.shammah.domain.repository.ResourceRepository
 import co.bleck.shammah.domain.repository.SermonRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,4 +60,14 @@ class FakeSermonRepository(initialSermons: List<Sermon> = emptyList()) : SermonR
     }
 
     override fun getSermons(): Flow<List<Sermon>> = sermons.asStateFlow()
+}
+
+class FakeResourceRepository(initialResources: List<Resource> = emptyList()) : ResourceRepository {
+    private val resources = MutableStateFlow(initialResources)
+
+    fun emit(value: List<Resource>) {
+        resources.value = value
+    }
+
+    override fun getResources(): Flow<List<Resource>> = resources.asStateFlow()
 }
