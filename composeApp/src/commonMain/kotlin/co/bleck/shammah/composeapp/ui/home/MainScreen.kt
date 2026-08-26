@@ -61,6 +61,7 @@ import co.bleck.shammah.composeapp.ui.components.SERMON_DETAIL_ROUTE
 import co.bleck.shammah.composeapp.ui.components.adaptiveContentWidth
 import co.bleck.shammah.composeapp.ui.home.events.EventsScreen
 import co.bleck.shammah.composeapp.ui.home.events.detail.EventDetailScreen
+import co.bleck.shammah.composeapp.ui.home.resources.ResourcesScreen
 import co.bleck.shammah.composeapp.ui.home.sermons.SermonsScreen
 import co.bleck.shammah.composeapp.ui.home.sermons.detail.SermonDetailScreen
 
@@ -71,7 +72,8 @@ fun MainScreen(authViewModel: AuthViewModel) {
         BottomNavItem.Home,
         BottomNavItem.Sermons,
         BottomNavItem.Events,
-        BottomNavItem.About
+        BottomNavItem.About,
+        BottomNavItem.Resources
     )
     val currentRoute = currentRoute(navController)
     val onNavigate: (String) -> Unit = { route ->
@@ -229,6 +231,7 @@ private fun AppNavHost(
         composable(BottomNavItem.Sermons.route) { SermonsScreen(navController) }
         composable(BottomNavItem.Events.route) { EventsScreen(navController) }
         composable(BottomNavItem.About.route) { AboutScreen(authViewModel) }
+        composable(BottomNavItem.Resources.route) { ResourcesScreen() }
 
         composable(
             route = SERMON_DETAIL_ROUTE,
