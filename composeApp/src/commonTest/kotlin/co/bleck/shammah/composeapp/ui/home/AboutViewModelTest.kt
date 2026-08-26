@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.ExperimentalTime
 
 class AboutViewModelTest : MainDispatcherTest() {
     private lateinit var repository: FakeResourceRepository
@@ -30,6 +31,7 @@ class AboutViewModelTest : MainDispatcherTest() {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun groupsResourcesByType() = runTest {
         val mission = Resource(
@@ -59,13 +61,19 @@ class AboutViewModelTest : MainDispatcherTest() {
         )
 
         viewModel.content.test {
-            assertEquals(0, listOfNotNull(awaitItem().mission, awaitItem().vision).size.let { 0 })
+            val item1 = awaitItem()
+            assertEquals(0,
+                listOfNotNull(
+                    item1.mission,
+                    item1.vision,
+                    item1.aboutUs).size
+            )
             repository.emit(listOf(unrelated, mission, vision, aboutUs))
 
-            val item = awaitItem()
-            assertEquals(mission, item.mission)
-            assertEquals(vision, item.vision)
-            assertEquals(aboutUs, item.aboutUs)
+            val item2 = awaitItem()
+            assertEquals(mission, item2.mission)
+            assertEquals(vision, item2.vision)
+            assertEquals(aboutUs, item2.aboutUs)
             cancelAndIgnoreRemainingEvents()
         }
     }
