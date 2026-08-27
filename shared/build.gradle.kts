@@ -1,10 +1,13 @@
 import java.util.Properties
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.kotlin.serialization)
+    jacoco
 }
 
 val generateWebFirebaseConfig by tasks.registering {
@@ -138,5 +141,55 @@ kotlin {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
     if (name.contains("WasmJs", ignoreCase = true)) {
         dependsOn(generateWebFirebaseConfig)
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.withType<Test>())
+
+    val kotlinClasses = fileTree(layout.buildDirectory.dir("classes/kotlin")) {
+        exclude(
+            "**/*Test*.*",
+            "**/fake/**",
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*\$Lambda$*.*",
+            "**/*Companion.class",
+            "**/*\$inlined$*.*",
+            "**/*Factory*.*",
+            "**/*Hilt*.*",
+            "**/*Dagger*.*",
+            "**/*_MembersInjector.class",
+            "**/*_Factory.class",
+        )
+    }
+
+    classDirectories.setFrom(kotlinClasses)
+    sourceDirectories.setFrom(
+        files(
+            "src/commonMain/kotlin",
+            "src/androidMain/kotlin",
+            "src/mobileMain/kotlin",
+        ),
+    )
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.dir("jacoco")) {
+            include("*.exec")
+        },
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
     }
 }

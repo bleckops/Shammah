@@ -1,10 +1,13 @@
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
+    jacoco
 }
 
 @OptIn(ExperimentalWasmDsl::class)
@@ -66,5 +69,54 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
         }
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.withType<Test>())
+
+    val kotlinClasses = fileTree(layout.buildDirectory.dir("classes/kotlin")) {
+        exclude(
+            "**/*Test*.*",
+            "**/fake/**",
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*\$Lambda$*.*",
+            "**/*Companion.class",
+            "**/*\$inlined$*.*",
+            "**/*Factory*.*",
+            "**/*Hilt*.*",
+            "**/*Dagger*.*",
+            "**/*_MembersInjector.class",
+            "**/*_Factory.class",
+        )
+    }
+
+    classDirectories.setFrom(kotlinClasses)
+    sourceDirectories.setFrom(
+        files(
+            "src/commonMain/kotlin",
+            "src/androidMain/kotlin",
+        ),
+    )
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.dir("jacoco")) {
+            include("*.exec")
+        },
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
     }
 }
