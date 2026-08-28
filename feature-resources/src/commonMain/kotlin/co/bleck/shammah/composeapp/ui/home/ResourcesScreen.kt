@@ -46,12 +46,14 @@ import androidx.compose.ui.unit.dp
 import co.bleck.shammah.composeapp.ui.components.ShimmerBox
 import co.bleck.shammah.composeapp.ui.components.StaggeredEntrance
 import co.bleck.shammah.domain.model.Resource
+import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResourcesScreen(
+    navController: NavHostController,
     vm: ResourcesViewModel = koinViewModel()
 ) {
     val resources by vm.resources.collectAsState()
@@ -106,7 +108,11 @@ fun ResourcesScreen(
                     key = { _, resource -> resource.id }
                 ) { index, resource ->
                     StaggeredEntrance(index = index + 1) {
-                        ResourceCard(resource)
+                        ResourceCard(resource) {
+                            navController.navigate("resource_detail/${resource.id}") {
+                                launchSingleTop = true
+                            }
+                        }
                     }
                 }
             }
@@ -117,12 +123,13 @@ fun ResourcesScreen(
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun ResourceCard(resource: Resource) {
+fun ResourceCard(resource: Resource, onClick: () -> Unit) {
 
     val resourceType = resource.type.name
 
     Card(
         modifier  = Modifier.fillMaxWidth(),
+        onClick = onClick,
         shape     = MaterialTheme.shapes.medium,
         colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)

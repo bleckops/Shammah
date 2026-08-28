@@ -21,3 +21,9 @@ class GetPublicResourcesUseCase(private val repository: ResourceRepository) {
                 .filterNot { restrictedResources.contains(it.type) }
         }
 }
+
+class ObserveResourceByIdUseCase(private val repository: ResourceRepository) {
+    operator fun invoke(resourceId: String): Flow<Resource?> = repository
+        .getResources()
+        .map { resources -> resources.find { it.id == resourceId } }
+}

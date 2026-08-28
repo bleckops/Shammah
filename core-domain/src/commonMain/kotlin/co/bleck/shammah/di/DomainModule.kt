@@ -5,6 +5,7 @@ import co.bleck.shammah.domain.usecase.GetBannersUseCase
 import co.bleck.shammah.domain.usecase.GetEventsUseCase
 import co.bleck.shammah.domain.usecase.GetMissionVisionAboutUsResourcesUseCase
 import co.bleck.shammah.domain.usecase.GetPublicResourcesUseCase
+import co.bleck.shammah.domain.usecase.ObserveResourceByIdUseCase
 import co.bleck.shammah.domain.usecase.GetSermonsUseCase
 import co.bleck.shammah.domain.usecase.ObserveAboutContentUseCase
 import co.bleck.shammah.domain.usecase.ObserveCurrentUserUseCase
@@ -20,6 +21,7 @@ val domainModule = module {
     factory { GetEventsUseCase(get()) }
     factory { GetSermonsUseCase(get()) }
     factory { GetPublicResourcesUseCase(get()) }
+    factory { ObserveResourceByIdUseCase(get()) }
     factory { ObserveAboutContentUseCase(get()) }
     factory { ObserveCurrentUserUseCase(get()) }
     factory { ObserveSermonByIdUseCase(get()) }
