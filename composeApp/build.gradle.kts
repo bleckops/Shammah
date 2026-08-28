@@ -33,7 +33,14 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":shared"))
+            implementation(project(":core-domain"))
+            implementation(project(":core-data"))
+            implementation(project(":core-ui"))
+            implementation(project(":feature-auth"))
+            implementation(project(":feature-home"))
+            implementation(project(":feature-events"))
+            implementation(project(":feature-sermons"))
+            implementation(project(":feature-resources"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(compose.material3)

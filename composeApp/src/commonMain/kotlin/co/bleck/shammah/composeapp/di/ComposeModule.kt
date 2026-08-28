@@ -1,24 +1,22 @@
 package co.bleck.shammah.composeapp.di
 
-import co.bleck.shammah.composeapp.ui.auth.AuthViewModel
-import co.bleck.shammah.composeapp.ui.home.AboutViewModel
-import co.bleck.shammah.composeapp.ui.home.HomeViewModel
-import co.bleck.shammah.composeapp.ui.home.events.EventsViewModel
-import co.bleck.shammah.composeapp.ui.home.events.detail.EventDetailViewModel
-import co.bleck.shammah.composeapp.ui.home.resources.ResourcesViewModel
-import co.bleck.shammah.composeapp.ui.home.sermons.SermonsViewModel
-import co.bleck.shammah.composeapp.ui.home.sermons.detail.SermonDetailViewModel
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.dsl.module
+import co.bleck.shammah.composeapp.platform.platformModule
+import co.bleck.shammah.composeapp.ui.auth.authModule
+import co.bleck.shammah.composeapp.ui.home.events.eventsModule
+import co.bleck.shammah.composeapp.ui.home.homeModule
+import co.bleck.shammah.composeapp.ui.home.resources.resourcesModule
+import co.bleck.shammah.composeapp.ui.home.sermons.sermonsModule
+import co.bleck.shammah.di.dataModule
+import co.bleck.shammah.di.domainModule
+import org.koin.core.module.Module
 
-val composeModule = module {
-    viewModelOf(::AuthViewModel)
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AboutViewModel)
-    viewModelOf(::SermonsViewModel)
-    viewModelOf(::EventsViewModel)
-    viewModelOf(::ResourcesViewModel)
-    viewModel { (sermonId: String) -> SermonDetailViewModel(sermonId, get()) }
-    viewModel { (eventId: String) -> EventDetailViewModel(eventId, get()) }
-}
+fun appModules(): Array<Module> = arrayOf(
+    domainModule,
+    dataModule,
+    authModule,
+    homeModule,
+    eventsModule,
+    sermonsModule,
+    resourcesModule,
+    platformModule(),
+)

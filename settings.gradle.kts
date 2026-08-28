@@ -25,7 +25,15 @@ dependencyResolutionManagement {
 
 rootProject.name = "Shammah"
 include(":androidApp")
-include(":shared")
 include(":composeApp")
 include(":webApp")
+include(":core-domain")
+include(":core-data")
+include(":core-ui")
+include(":feature-auth")
+include(":feature-home")
+include(":feature-events")
+include(":feature-sermons")
+include(":feature-resources")
+include(":test-support")
  

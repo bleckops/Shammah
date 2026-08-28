@@ -52,7 +52,19 @@ jobs:
       - run: chmod +x gradlew
 
       # Host unit tests for KMP modules (avoid iOS/wasm browser test targets on Linux CI).
-      - run: ./gradlew :shared:testAndroidHostTest :composeApp:testAndroidHostTest assembleRelease
+      - run: |
+          ./gradlew \
+            :composeApp:testAndroidHostTest \
+            :core-data:testAndroidHostTest \
+            :core-domain:testAndroidHostTest \
+            :core-ui:testAndroidHostTest \
+            :feature-auth:testAndroidHostTest \
+            :feature-events:testAndroidHostTest \
+            :feature-home:testAndroidHostTest \
+            :feature-resources:testAndroidHostTest \
+            :feature-sermons:testAndroidHostTest \
+            :test-support:testAndroidHostTest \
+            :androidApp:assembleRelease
         env:
           ANDROID_KEYSTORE_PATH: release.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -106,7 +118,20 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - run: ./gradlew :shared:testAndroidHostTest :composeApp:testAndroidHostTest lint bundleRelease
+      - run: |
+          ./gradlew \
+            :composeApp:testAndroidHostTest \
+            :core-data:testAndroidHostTest \
+            :core-domain:testAndroidHostTest \
+            :core-ui:testAndroidHostTest \
+            :feature-auth:testAndroidHostTest \
+            :feature-events:testAndroidHostTest \
+            :feature-home:testAndroidHostTest \
+            :feature-resources:testAndroidHostTest \
+            :feature-sermons:testAndroidHostTest \
+            :test-support:testAndroidHostTest \
+            :androidApp:lintRelease \
+            :androidApp:bundleRelease
         env:
           ANDROID_KEYSTORE_PATH: release.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -160,7 +185,20 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - run: ./gradlew :shared:testAndroidHostTest :composeApp:testAndroidHostTest lint bundleRelease
+      - run: |
+          ./gradlew \
+            :composeApp:testAndroidHostTest \
+            :core-data:testAndroidHostTest \
+            :core-domain:testAndroidHostTest \
+            :core-ui:testAndroidHostTest \
+            :feature-auth:testAndroidHostTest \
+            :feature-events:testAndroidHostTest \
+            :feature-home:testAndroidHostTest \
+            :feature-resources:testAndroidHostTest \
+            :feature-sermons:testAndroidHostTest \
+            :test-support:testAndroidHostTest \
+            :androidApp:lintRelease \
+            :androidApp:bundleRelease
         env:
           ANDROID_KEYSTORE_PATH: release.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}

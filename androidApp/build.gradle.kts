@@ -80,7 +80,7 @@ android {
 
 dependencies {
     implementation(project(":composeApp"))
-    implementation(project(":shared"))
+    implementation(project(":core-data"))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.androidx.activity.compose)
