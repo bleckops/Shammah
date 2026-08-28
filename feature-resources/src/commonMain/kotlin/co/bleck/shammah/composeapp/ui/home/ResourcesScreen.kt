@@ -43,6 +43,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.bleck.shammah.composeapp.ui.components.EmptyStateCard
 import co.bleck.shammah.composeapp.ui.components.ShimmerBox
 import co.bleck.shammah.composeapp.ui.components.StaggeredEntrance
 import co.bleck.shammah.domain.model.Resource
@@ -57,6 +58,7 @@ fun ResourcesScreen(
     vm: ResourcesViewModel = koinViewModel()
 ) {
     val resources by vm.resources.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -80,19 +82,32 @@ fun ResourcesScreen(
         }
     ) { innerPadding ->
 
-        if (resources.isEmpty()) {
-            // Loading: shimmer skeletons OR empty state
+        if (isLoading) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
+                repeat(3) {
+                    ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
+                }
+            }
+        } else if (resources.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                EmptyStateCard(
+                    title = "Aún no hay recursos",
+                    message = "Los recursos aparecerán aquí cuando estén disponibles.",
+                )
             }
         } else {
             LazyColumn(

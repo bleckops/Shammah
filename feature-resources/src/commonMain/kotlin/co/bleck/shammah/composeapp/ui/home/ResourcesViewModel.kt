@@ -18,12 +18,20 @@ class ResourcesViewModel(
     private val _resources = MutableStateFlow<List<Resource>>(emptyList())
     val resources: StateFlow<List<Resource>> = _resources.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
-            getPublicResourcesUseCase()
-                .collectLatest { resources ->
-                    _resources.value = resources
-                }
+            try {
+                getPublicResourcesUseCase()
+                    .collectLatest { resources ->
+                        _resources.value = resources
+                        _isLoading.value = false
+                    }
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -29,6 +30,9 @@ class EventsViewModel(
 
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = _events
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _selectedDate = MutableStateFlow(Clock.System.todayIn(TimeZone.currentSystemDefault()))
     val selectedDate: StateFlow<LocalDate> = _selectedDate
@@ -50,7 +54,14 @@ class EventsViewModel(
 
     init {
         viewModelScope.launch {
-            getEventsUseCase().collectLatest { _events.value = it }
+            try {
+                getEventsUseCase().collectLatest {
+                    _events.value = it
+                    _isLoading.value = false
+                }
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 

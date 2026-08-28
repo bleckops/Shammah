@@ -52,6 +52,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val banners by viewModel.banners.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val listState = rememberLazyListState()
 
     Surface(
@@ -72,15 +73,13 @@ fun HomeScreen(
             }
             item {
                 StaggeredEntrance(index = 1) {
-                    if (banners.isEmpty()) {
-                        // Show shimmer placeholders while loading
+                    if (isLoading) {
                         Column(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             ShimmerBox(height = 200.dp, cornerRadius = 20.dp)
                         }
-                    } else {
+                    } else if (banners.isNotEmpty()) {
                         BannersSection(banners = banners) { url ->
                             if (url.isNotBlank()) {
                                 onOpenUrl(url)

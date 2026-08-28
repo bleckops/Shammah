@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import co.bleck.shammah.composeapp.ui.components.EmptyStateCard
 import co.bleck.shammah.composeapp.ui.components.ShimmerBox
 import co.bleck.shammah.composeapp.ui.components.StaggeredEntrance
 import co.bleck.shammah.composeapp.ui.components.toShortDateEs
@@ -36,6 +37,7 @@ fun SermonsScreen(
     vm: SermonsViewModel = koinViewModel()
 ) {
     val sermons by vm.sermons.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
     var selectedFilter by remember { mutableStateOf("Todos") }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -60,19 +62,32 @@ fun SermonsScreen(
         }
     ) { innerPadding ->
 
-        if (sermons.isEmpty()) {
-            // Loading: shimmer skeletons OR empty state
+        if (isLoading) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
-                ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
+                repeat(3) {
+                    ShimmerBox(height = 110.dp, cornerRadius = 20.dp)
+                }
+            }
+        } else if (sermons.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                EmptyStateCard(
+                    title = "Aún no hay sermones",
+                    message = "Los sermones aparecerán aquí cuando estén disponibles.",
+                )
             }
         } else {
             LazyColumn(

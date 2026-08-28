@@ -43,6 +43,7 @@ import androidx.navigation.NavHostController
 import co.bleck.shammah.composeapp.ui.components.fullNameEs
 import co.bleck.shammah.composeapp.ui.components.narrowNameEs
 import co.bleck.shammah.composeapp.ui.components.shortDisplayEs
+import co.bleck.shammah.composeapp.ui.components.ShimmerBox
 import co.bleck.shammah.domain.model.Event
 import co.bleck.shammah.domain.model.EventType
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -112,6 +113,7 @@ fun EventsScreen(
     viewModel: EventsViewModel = koinViewModel()
 ) {
     val events          by viewModel.events.collectAsState()
+    val isLoading       by viewModel.isLoading.collectAsState()
     val selectedDate    by viewModel.selectedDate.collectAsState()
     val eventDates      by viewModel.eventDates.collectAsState()
     val selectedEvents  by viewModel.eventsForSelectedDate.collectAsState()
@@ -212,9 +214,17 @@ fun EventsScreen(
             }
 
             // ── Event cards or empty state ───────────────────────────────────
-            if (selectedEvents.isEmpty()) {
+            if (isLoading) {
                 item {
-                    EmptyEventsCard()
+                    ShimmerBox(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        height = 132.dp,
+                        cornerRadius = 16.dp,
+                    )
+                }
+            } else if (selectedEvents.isEmpty()) {
+                item {
+                    EmptyEventsCard(hasEvents = events.isNotEmpty())
                 }
             } else {
                 items(selectedEvents, key = { it.id }) { event ->
@@ -599,7 +609,7 @@ private fun EventCard(
 // ── Empty state ────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EmptyEventsCard() {
+private fun EmptyEventsCard(hasEvents: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -624,14 +634,18 @@ private fun EmptyEventsCard() {
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                text      = "Sin eventos",
+                text      = if (hasEvents) "Sin eventos este día" else "Aún no hay eventos",
                 style     = MaterialTheme.typography.titleSmall,
                 color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text      = "No hay eventos programados\npara este día",
+                text      = if (hasEvents) {
+                    "No hay eventos programados\npara este día"
+                } else {
+                    "Los eventos aparecerán aquí cuando estén disponibles."
+                },
                 style     = MaterialTheme.typography.bodySmall,
                 color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
                 textAlign = TextAlign.Center
