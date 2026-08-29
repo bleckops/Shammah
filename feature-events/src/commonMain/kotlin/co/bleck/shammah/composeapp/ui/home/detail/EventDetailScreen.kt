@@ -41,6 +41,7 @@ import co.bleck.shammah.composeapp.ui.home.events.icon
 import co.bleck.shammah.composeapp.ui.home.events.label
 import co.bleck.shammah.domain.model.Event
 import co.bleck.shammah.domain.model.EventType
+import co.bleck.shammah.domain.model.recurrenceSummary
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -182,6 +183,25 @@ fun EventDetailScreen(
                                     icon = Icons.Default.AccessTime,
                                     text = currentEvent.time,
                                     accent = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+
+                        currentEvent.recurrenceSummary()?.let { recurrence ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Repeat,
+                                    contentDescription = null,
+                                    tint = typeColor,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = recurrence,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

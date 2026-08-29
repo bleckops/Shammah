@@ -4,6 +4,8 @@ package co.bleck.shammah.data.mapper
 
 import co.bleck.shammah.data.dto.EventDto
 import co.bleck.shammah.domain.model.EventType
+import co.bleck.shammah.domain.model.RECURSIVE_REPEAT
+import co.bleck.shammah.domain.model.YEARLY_PERIOD
 import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,5 +45,14 @@ class EventMapperTest {
         assertEquals(EventType.camp, EventMapper.toDomain("e3", EventDto(type = "CAMP")).type)
         assertEquals(EventType.social, EventMapper.toDomain("e4", EventDto(type = "unknown")).type)
         assertEquals(EventType.social, EventMapper.toDomain("e5", EventDto(type = 5)).type)
+    }
+
+    @Test
+    fun defaultsBirthdayRecurrenceForLegacyDocument() {
+        val result = EventMapper.toDomain("birthday", EventDto(type = "birthdays"))
+
+        assertEquals(RECURSIVE_REPEAT, result.repeat)
+        assertEquals(YEARLY_PERIOD, result.period)
+        assertEquals(null, result.repeatNumber)
     }
 }

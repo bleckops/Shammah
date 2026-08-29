@@ -42,6 +42,9 @@ internal fun DocumentSnapshot.toEventDto(): EventDto = EventDto(
     location = stringField("location"),
     imageUrl = stringField("imageUrl"),
     type = stringField("type"),
+    repeat = stringField("repeat"),
+    repeatNumber = nullableIntField("repeatNumber"),
+    period = stringField("period"),
     isActive = boolField("isActive", default = true),
     createdAt = instantField("createdAt"),
     updatedAt = instantField("updatedAt"),
@@ -72,6 +75,14 @@ private fun DocumentSnapshot.intField(name: String, default: Int = 0): Int {
     runCatching { get<Long>(name) }.getOrNull()?.let { return it.toInt() }
     runCatching { get<Double>(name) }.getOrNull()?.let { return it.toInt() }
     return default
+}
+
+private fun DocumentSnapshot.nullableIntField(name: String): Int? {
+    if (!contains(name)) return null
+    runCatching { get<Int>(name) }.getOrNull()?.let { return it }
+    runCatching { get<Long>(name) }.getOrNull()?.let { return it.toInt() }
+    runCatching { get<Double>(name) }.getOrNull()?.let { return it.toInt() }
+    return null
 }
 
 private fun DocumentSnapshot.boolField(name: String, default: Boolean): Boolean {

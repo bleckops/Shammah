@@ -46,6 +46,7 @@ import co.bleck.shammah.composeapp.ui.components.shortDisplayEs
 import co.bleck.shammah.composeapp.ui.components.ShimmerBox
 import co.bleck.shammah.domain.model.Event
 import co.bleck.shammah.domain.model.EventType
+import co.bleck.shammah.domain.model.recurrenceSummary
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -525,7 +526,7 @@ private fun EventCard(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
-                                text  = "Cada año",
+                                text  = event.recurrenceSummary() ?: "Cada año",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -595,6 +596,20 @@ private fun EventCard(
                                     color     = typeColor.copy(alpha = 0.75f),
                                     fontWeight = FontWeight.Medium,
                                     modifier  = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                        if (!isBirthday && event.recurrenceSummary() != null) {
+                            Surface(
+                                shape = RoundedCornerShape(50),
+                                color = typeColor.copy(alpha = 0.08f)
+                            ) {
+                                Text(
+                                    text = event.recurrenceSummary()!!,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = typeColor.copy(alpha = 0.75f),
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
                                 )
                             }
                         }

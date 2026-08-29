@@ -69,6 +69,9 @@ internal fun JsonObject.toEventDto(): EventDto = EventDto(
     location = stringField("location"),
     imageUrl = stringField("imageUrl"),
     type = stringField("type"),
+    repeat = stringField("repeat"),
+    repeatNumber = nullableIntField("repeatNumber"),
+    period = stringField("period"),
     isActive = boolField("isActive", default = true),
     createdAt = instantField("createdAt"),
     updatedAt = instantField("updatedAt"),
@@ -112,6 +115,12 @@ private fun JsonObject.intField(name: String, default: Int = 0): Int {
         value.contentOrNull?.toIntOrNull()?.let { return it }
     }
     return default
+}
+
+private fun JsonObject.nullableIntField(name: String): Int? {
+    val value = field(name) as? JsonPrimitive ?: return null
+    return value.longOrNull?.toInt() ?: value.doubleOrNull?.toInt()
+        ?: value.contentOrNull?.toIntOrNull()
 }
 
 private fun JsonObject.boolField(name: String, default: Boolean): Boolean {
